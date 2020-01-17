@@ -1,0 +1,13 @@
+name = "SymSpell"
+uuid = "d4f13b8d-38bd-4a1b-8388-9f74cc6ed44b"
+authors = ["Andrey Oskin"]
+version = "0.1.0"
+
+[compat]
+julia = "1.3"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
