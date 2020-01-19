@@ -1,5 +1,8 @@
 module SymSpell
 
-greet() = print("Hello World!")
+export update!
+
+include("dictionary.jl")
+include("lookup.jl")
 
 end # module

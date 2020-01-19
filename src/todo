@@ -1,0 +1,37 @@
+transfer_casing_for_similar_text(text_w_casing, text_wo_casing)
+
+Transferring the casing from one text to another - for similar
+(not matching) text
+1. It will use `difflib`'s `SequenceMatcher` to identify the
+different type of changes needed to turn `text_w_casing` into
+`text_wo_casing`
+2. For each type of change:
+- for inserted sections:
+- it will transfer the casing from the prior character
+- if no character before or the character before is the\
+space, then it will transfer the casing from the following\
+character
+- for deleted sections: no case transfer is required
+- for equal sections: just swap out the text with the original,\
+the one with the casings, as otherwise the two are the same
+- replaced sections: transfer the casing using\
+:meth:`transfer_casing_for_matching_text` if the two has the\
+same length, otherwise transfer character-by-character and\
+carry the last casing over to any additional characters.
+Parameters
+----------
+text_w_casing : str
+Text with varied casing
+text_wo_casing : str
+Text that is in lowercase only
+Returns
+-------
+text_wo_casing : str
+If `text_wo_casing` is empty
+c : str
+Text with the content of `text_wo_casing` but the casing of
+`text_w_casing`
+Raises
+------
+ValueError
+If `text_w_casing` is empty
