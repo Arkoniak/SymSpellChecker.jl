@@ -38,3 +38,6 @@ judge(median(res1), median(res2))
 using PkgBenchmark
 import SymSpell
 br = benchmarkpkg("SymSpell")
+
+cd(@__DIR__)
+PkgBenchmark.export_markdown("SomeTest2.md", br)
