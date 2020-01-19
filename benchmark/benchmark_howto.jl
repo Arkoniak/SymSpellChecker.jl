@@ -41,3 +41,8 @@ br = benchmarkpkg("SymSpell")
 
 cd(@__DIR__)
 PkgBenchmark.export_markdown("SomeTest2.md", br)
+
+# Judge
+
+j1 = PkgBenchmark.judge("SymSpell", "optimize_getopcodes",  "master")
+export_markdown("/tmp/xxx.md", j1)
