@@ -24,5 +24,9 @@ end
     text_w_casing = "Haaw is the weeather in New York?"
     text_wo_casing = "how is the weather in new york?"
     @test transfer_casing_for_similar_text(text_w_casing, text_wo_casing) == "How is the weather in New York?"
+
+    text_w_casing  = "BcDefg J kLn"
+    text_wo_casing = "abcdefg hj kmn"
+    @test transfer_casing_for_similar_text(text_w_casing, text_wo_casing) == "ABcDefg HJ kMn"
 end
 end # module
