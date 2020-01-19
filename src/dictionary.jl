@@ -95,7 +95,7 @@ end
 
 function Dictionary(path; sep = " ")
     d = Dictionary()
-    update_dictionary(d, path, sep = sep)
+    update!(d, path, sep = sep)
 end
 
 # TODO: add support for DataFrames and CSV

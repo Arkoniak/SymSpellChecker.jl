@@ -410,7 +410,7 @@ using StringDistances
 
 function get_opcodes(s1::AbstractString, s2::AbstractString)
     res = Tuple{String, Int, Int, Int, Int}[]
-    blocks = sort(collect(StringDistances.matching_blocks(s1, s2)), by = x -> x[1])
+    blocks = sort!(collect(StringDistances.matching_blocks(s1, s2)), by = x -> x[1])
     i1, i2 = 1, 1
     for block in blocks
         if i1 < block[1] && i2 == block[2]
