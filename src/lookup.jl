@@ -1,4 +1,4 @@
-@enum Verbosity VerbosityALL VerbosityCLOSEST
+@enum Verbosity VerbosityTOP VerbosityCLOSEST VerbosityALL
 
 """
     lookup(dict, phrase, max_edit_distance, include_unknown, ignore_token, transfer_casing)
@@ -37,8 +37,10 @@ ValueError
     If `max_edit_distance` is greater than
     :attr:`_max_dictionary_edit_distance`
 """
-function lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, verbosity; max_edit_distance = dict.max_edit_distance)
-    if max_edit_distance > dict.max_edit_distance
+function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
+        transfer_casing = false, verbosity = VerbosityTOP,
+        max_edit_distance = dict.max_dictionary_edit_distance)
+    if max_edit_distance > dict.max_dictionary_edit_distance
         throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_edit_distance)"))
     end
 
@@ -102,11 +104,11 @@ function lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, ve
 
     # add original prefix
     phrase_prefix_len = phrase_len
-    if phrase_prefix_len > dict.prefix_len
-        phrase_prefix_len = dict.prefix_len
+    if phrase_prefix_len > dict.prefix_length
+        phrase_prefix_len = dict.prefix_length
         push!(candidates, phrase[1:phrase_prefix_len])
     else
-        push!(candidate, phrase)
+        push!(candidates, phrase)
     end
 
     distance_comparer = EditDistance(dict.distance_algorithm)
@@ -121,7 +123,7 @@ function lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, ve
             # further if Verbosity.TOP or CLOSEST (candidates are
             # ordered by delete distance, so none are closer than
             # current)
-            verbosity = VerbosityALL && continue
+            verbosity == VerbosityALL && continue
             break
         end
 

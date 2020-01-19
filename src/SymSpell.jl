@@ -1,6 +1,6 @@
 module SymSpell
 
-export update!, Dictionary
+export update!, Dictionary, lookup
 
 include("dictionary.jl")
 include("lookup.jl")
