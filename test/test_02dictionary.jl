@@ -22,6 +22,13 @@ include("preamble.jl")
     push!(d, "c", 1)
     @test length(d.words) == 3
     @test length(d.below_threshold_words) == 0
+
+    d = Dictionary(max_dictionary_edit_distance = 1)
+    push!(d, "abc", 100)
+    @test d.deletes == Dict{String, Vector{String}}("bc" => ["abc"], "ac" => ["abc"], "ab" => ["abc"], "abc" => ["abc"])
+
+    push!(d, "abd", 100)
+    @test d.deletes["ab"] == ["abc", "abd"]
 end
 
 @testset "dictionary load" begin
