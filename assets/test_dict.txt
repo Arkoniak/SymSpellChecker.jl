@@ -1,0 +1,4 @@
+key 10
+world 2
+hello 5
+sad 1

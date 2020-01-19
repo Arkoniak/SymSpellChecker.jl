@@ -1,5 +1,17 @@
-# Stub
-struct Dictionary{T} end
+mutable struct Dictionary{S <: AbstractString, T <: Integer}
+    words::Dict{S, T}
+    below_threshold_words::Dict{S, T}
+    deletes::Dict{S, Vector{S}}
+
+    max_dictionary_edit_distance::Int
+    prefix_length::Int
+    count_threshold::Int
+    max_length::Int
+end
+
+Dictionary(; max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1) =
+    Dictionary{String, Int}(Dict(), Dict(), Dict(),
+        max_dictionary_edit_distance, prefix_length, count_threshold, 0)
 
 """
     edits(dict, word, edit_distance, delete_words)
@@ -16,7 +28,7 @@ function edits!(delete_words, word, edit_distance, max_dictionary_edit_distance)
             if !(delete in delete_words)
                 push!(delete_words, delete)
                 # recursion, if maximum edit distance not yet reached
-                if edit_distance < dict.max_dictionary_edit_distance
+                if edit_distance < max_dictionary_edit_distance
                     edits!(delete_words, delete, edit_distance, max_dictionary_edit_distance)
                 end
             end
@@ -26,8 +38,8 @@ function edits!(delete_words, word, edit_distance, max_dictionary_edit_distance)
     return delete_words
 end
 
-function edits_prefix(key, max_dictionary_edit_distance, prefix_length)
-    hash_set = Set()
+function edits_prefix(key::S, max_dictionary_edit_distance, prefix_length) where S
+    hash_set = Set{S}()
 
     if length(key) <= max_dictionary_edit_distance
         push!(hash_set, "")
@@ -39,7 +51,7 @@ function edits_prefix(key, max_dictionary_edit_distance, prefix_length)
     edits!(hash_set, key, 0, max_dictionary_edit_distance)
 end
 
-function Base.:push!(dict::Dictionary{T}, key, cnt) where T <: Integer
+function Base.:push!(dict::Dictionary{S, T}, key, cnt) where {T <: Integer, S <: AbstractString}
     if cnt < 0
         if dict.count_threshold > 0 return false end
         cnt = 0
@@ -58,7 +70,7 @@ function Base.:push!(dict::Dictionary{T}, key, cnt) where T <: Integer
         if cnt >= dict.count_threshold
             delete!(dict.below_threshold_words, key)
         else
-            dict.below_threshold_words = cnt
+            dict.below_threshold_words[key] = cnt
             return false
         end
     elseif key in keys(dict.words)
@@ -68,7 +80,7 @@ function Base.:push!(dict::Dictionary{T}, key, cnt) where T <: Integer
         dict.words[key] = typemax(T) - cnt_prev > cnt ? cnt_prev + cnt : typemax(T)
         return false
     elseif cnt < dict.count_threshold
-        # new or existing below threshold word
+        # new below threshold word
         dict.below_threshold_words[key] = cnt
         return false
     end
@@ -87,7 +99,7 @@ function Base.:push!(dict::Dictionary{T}, key, cnt) where T <: Integer
     # create deletes
     edits = edits_prefix(key, dict.max_dictionary_edit_distance, dict.prefix_length)
     for delete in edits
-        push!(get!(dict.deletes, delete, []), key)
+        push!(get!(dict.deletes, delete, S[]), key)
     end
 
     return true
@@ -99,11 +111,11 @@ function Dictionary(path; sep = " ")
 end
 
 # TODO: add support for DataFrames and CSV
-function update!(dict, path; sep = " ")
+function update!(dict::Dictionary{S, T}, path; sep = " ") where {S, T}
     for line in eachline(path)
         line_parts = strip.(split(line, sep))
-        if r >= 2
-            push!(dict, line_parts[1], line_parts[2])
+        if length(line_parts) >= 2
+            push!(dict, line_parts[1], parse(T, line_parts[2]))
         end
     end
     dict
