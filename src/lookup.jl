@@ -6,6 +6,10 @@ struct SuggestItem{T <: AbstractString}
     count::Int
 end
 
+Base.:isless(si1::SuggestItem, si2::SuggestItem) = (si1.distance < si2.distance) ||
+    ((si1.distance == si2.distance) && (si1.count > si2.count)) ||
+    ((si1.distance == si2.distance) && (si1.count == si2.count) && (si1.phrase < si2.phrase))
+
 """
     lookup(dict, phrase, max_edit_distance, include_unknown, ignore_token, transfer_casing)
 
