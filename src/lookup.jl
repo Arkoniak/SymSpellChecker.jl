@@ -1,5 +1,11 @@
 @enum Verbosity VerbosityTOP VerbosityCLOSEST VerbosityALL
 
+struct SuggestItem{T <: AbstractString}
+    phrase::T
+    distance::Int
+    count::Int
+end
+
 """
     lookup(dict, phrase, max_edit_distance, include_unknown, ignore_token, transfer_casing)
 
@@ -39,12 +45,13 @@ ValueError
 """
 function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         transfer_casing = false, verbosity = VerbosityTOP,
-        max_edit_distance = dict.max_dictionary_edit_distance)
+        max_edit_distance = dict.max_dictionary_edit_distance,
+        compare_algorithm = DamerauLevenshtein())
     if max_edit_distance > dict.max_dictionary_edit_distance
-        throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_edit_distance)"))
+        throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_dictionary_edit_distance)"))
     end
 
-    suggestions = []
+    suggestions = SuggestItem[]
     phrase_len = length(phrase)
 
     if transfer_casing
@@ -111,7 +118,6 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         push!(candidates, phrase)
     end
 
-    distance_comparer = EditDistance(dict.distance_algorithm)
     for candidate in candidates
         candidate_len = length(candidate)
         len_diff = phrase_prefix_len - candidate_len
@@ -128,8 +134,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         end
 
         if candidate in keys(dict.deletes)
-            dict_suggestions = dict.deletes[candidate]
-            for suggestion in dict_suggestions
+            for suggestion in dict.deletes[candidate]
                 suggestion == phrase && continue
                 suggestion_len = length(suggestion)
 
@@ -198,7 +203,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                     # evaluates to false
 
                     if dict.prefix_length - max_edit_distance == candidate_len
-                        min_distance = min(phrase_len, suggestion_len) = dict.prefix_length
+                        min_distance = min(phrase_len, suggestion_len) - dict.prefix_length
                     else
                         min_distance = 0
                     end
@@ -216,13 +221,15 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                         # expensive, and only pays off when
                         # verbosity is TOP or CLOSEST
                         if (verbosity != VerbosityALL &&
-                            !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length, candidate_len, suggestion_len)) ||
-                            suggestion in considered_suggestions
+                            !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length)) ||
+                            (suggestion in considered_suggestions)
                             continue
                         end
                         push!(considered_suggestions, suggestion)
-                        distance = distance_comparer.compare(phrase, suggestion, max_edit_distance_2)
-                        distance < 0 && continue
+                        # TODO - fix this stuff
+                        distance = evaluate(compare_algorithm, phrase, suggestion) # distance_comparer.compare(phrase, suggestion, max_edit_distance_2)
+                        distance > max_edit_distance_2 && continue
+                        # distance < 0 && continue
                     end
 
                     # do not process higher distances than those
@@ -255,35 +262,36 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                     end
                 end
             end
+        end
 
-            # add edits: derive edits (deletes) from candidate (phrase)
-            # and add them to candidates list. this is a recursive
-            # process until the maximum edit distance has been reached
-            if len_diff < max_edit_distance && candidate_len <= dict.prefix_length
-                # do not create edits with edit distance smaller than
-                # suggestions already found
-                if verbosity != VerbosityALL && len_diff >= max_edit_distance_2
-                    continue
-                end
-                for i in 1:candidate_len
-                    delete = candidate[1:i - 1] + candidate[i+1:end]
-                    if !(delete in considered_deletes)
-                        push!(considered_deletes, delete)
-                        push!(candidates, delete)
-                    end
+        # add edits: derive edits (deletes) from candidate (phrase)
+        # and add them to candidates list. this is a recursive
+        # process until the maximum edit distance has been reached
+        if len_diff < max_edit_distance && candidate_len <= dict.prefix_length
+            # do not create edits with edit distance smaller than
+            # suggestions already found
+            if verbosity != VerbosityALL && len_diff >= max_edit_distance_2
+                continue
+            end
+            for i in 1:candidate_len
+                delete = candidate[1:i - 1] * candidate[i+1:end]
+                if !(delete in considered_deletes)
+                    push!(considered_deletes, delete)
+                    push!(candidates, delete)
                 end
             end
-
-        end
-        if length(suggestions) > 1
-            sort!(suggestions)
-        end
-
-        if transfer_casing
-            suggestions = [SuggestItem(transfer_casing_for_similar_text(original_phrase, s.term), s.distance, s.count)
-                for s in suggestions]
         end
     end
+
+    if length(suggestions) > 1
+        sort!(suggestions)
+    end
+
+    if transfer_casing
+        suggestions = [SuggestItem(transfer_casing_for_similar_text(original_phrase, s.phrase), s.distance, s.count)
+                        for s in suggestions]
+    end
+
     early_exit()
 
     return suggestions
@@ -296,18 +304,19 @@ Check whether all delete chars are present in the suggestion
 prefix in correct order, otherwise this is just a hash
 collision
 """
-function delete_in_suggestion_prefix(delete, suggestion, prefix_len, delete_len, suggestion_len)
-    delete_len == 0 && return true
-    suggestion_len = prefix_len < suggestion_len ? prefix_len : suggestion_len
+function delete_in_suggestion_prefix(delete, suggestion, prefix_len)
+    isempty(delete) && return true
+    suggestion_len = min(prefix_len, length(suggestion))
 
-    j = 0
-    for i in 1:delete_len
-        del_char = delete[i]
-        while j < suggestion_len && del_char != suggestion[j]
+    # TODO: verify that by construction delete_len always <= prefix_len and this line can be removed
+    delete_len = min(prefix_len, length(delete))
+
+    j = 1
+    for del_char in delete[1:delete_len]
+        while j <= suggestion_len && del_char != suggestion[j]
             j += 1
         end
-
-        j == suggestion_len && return false
+        j > suggestion_len && return false
     end
 
     return true

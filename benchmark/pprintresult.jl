@@ -1,4 +1,4 @@
 using PkgBenchmark
 include("pprinthelper.jl")
-result = PkgBenchmark.readresults(joinpath(@__DIR__, "result.json"))
+result = PkgBenchmark.readresults(ARGS[1])
 displayresult(result)
