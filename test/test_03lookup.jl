@@ -92,4 +92,56 @@ end
     @test length(result) == 1
     @test result[1].phrase == "steama"
 end
+
+@testset "lookup should not return non word delete" begin
+    d = Dictionary(count_threshold = 10)
+    push!(d, "pawn", 10)
+    result = lookup(d, "paw", verbosity = VerbosityTOP, max_edit_distance = 0)
+    @test length(result) == 0
+
+    result = lookup(d, "awn", verbosity = VerbosityTOP, max_edit_distance = 0)
+    @test length(result) == 0
+end
+
+@testset "lookup should not return low count word" begin
+    d = Dictionary(count_threshold = 10)
+    push!(d, "pawn", 1)
+    result = lookup(d, "pawn", verbosity = VerbosityTOP, max_edit_distance = 0)
+    @test length(result) == 0
+end
+
+@testset "lookup should not return low count word that are also delete word" begin
+    d = Dictionary(count_threshold = 10)
+    push!(d, "flame", 20)
+    push!(d, "flam", 1)
+    result = lookup(d, "flam", verbosity = VerbosityTOP, max_edit_distance = 0)
+    @test length(result) == 0
+end
+
+@testset "lookup max edit distance too large" begin
+    d = Dictionary(count_threshold = 10)
+    push!(d, "flame", 20)
+    push!(d, "flam", 1)
+    @test_throws ArgumentError lookup(d, "flam", verbosity = VerbosityTOP, max_edit_distance = 3)
+end
+
+@testset "lookup include unknown" begin
+    d = Dictionary(count_threshold = 10)
+    push!(d, "flame", 20)
+    push!(d, "flam", 1)
+    result = lookup(d, "flam", verbosity = VerbosityTOP, max_edit_distance = 0, include_unknown = true)
+    @test length(result) == 1
+    @test result[1].phrase == "flam"
+end
+
+@testset "lookup avoid exact match early exit" begin
+    max_edit_distance = 2
+    d = Dictionary(count_threshold = 10, max_dictionary_edit_distance = max_edit_distance)
+    push!(d, "flame", 20)
+    push!(d, "flam", 1)
+    result = lookup(d, "24th", verbosity = VerbosityALL, max_edit_distance = max_edit_distance,
+        ignore_token = r"\d{2}\w*\b")
+    @test length(result) == 1
+    @test result[1].phrase == "24th"
+end
 end # module
