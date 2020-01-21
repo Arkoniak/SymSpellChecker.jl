@@ -152,4 +152,15 @@ end
 
     @test length(result) == 1
 end
+
+@testset "shouldn't switch to far away words" begin
+    d = Dictionary()
+    push!(d, "border", 200)
+    push!(d, "bored", 40)
+    push!(d, "board", 50)
+    push!(d, "for", 100)
+    result = lookup(d, "bord")
+
+    @test result[1].phrase == "board"
+end
 end # module
