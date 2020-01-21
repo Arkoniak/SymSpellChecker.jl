@@ -114,13 +114,8 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
     candidates = []
 
     # add original prefix
-    phrase_prefix_len = phrase_len
-    if phrase_prefix_len > dict.prefix_length
-        phrase_prefix_len = dict.prefix_length
-        push!(candidates, phrase[1:phrase_prefix_len])
-    else
-        push!(candidates, phrase)
-    end
+    phrase_prefix_len = min(phrase_len, dict.prefix_length)
+    push!(candidates, phrase[1:phrase_prefix_len])
 
     for candidate in candidates
         candidate_len = length(candidate)
@@ -194,6 +189,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                     # distance = ??? phrase[suggestion[0]] < 0 ? phrase_len : phrase_len - 1
                     (distance > max_edit_distance_2 || suggestion in considered_suggestions)
                     continue
+                end
 
                 # number of edits in prefix == maxediddistance AND
                 # no identical suffix, then
@@ -201,69 +197,64 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                 # Levenshtein calculation
                 # (phraseLen >= prefixLength) &&
                 # (suggestionLen >= prefixLength)
+
+                # handles the shortcircuit of min_distance
+                # assignment when first boolean expression
+                # evaluates to false
+                if dict.prefix_length - max_edit_distance == candidate_len
+                    min_distance = min(phrase_len, suggestion_len) - dict.prefix_length
                 else
-                    # handles the shortcircuit of min_distance
-                    # assignment when first boolean expression
-                    # evaluates to false
+                    min_distance = 0
+                end
 
-                    if dict.prefix_length - max_edit_distance == candidate_len
-                        min_distance = min(phrase_len, suggestion_len) - dict.prefix_length
-                    else
-                        min_distance = 0
-                    end
+                if (dict.prefix_length - max_edit_distance == candidate_len) &&
+                    (min_distance > 1 && phrase[phrase_len + 1 - min_distance:end] != suggestion[suggestion_len + 1 - min_distance:end]) ||
+                    (min_distance > 0 &&
+                        phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance] &&
+                        (phrase[phrase_len - min_distance - 1] != suggestion[suggestion_len - min_distance] ||
+                            phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance - 1]
+                        ))
+                    continue
+                end
 
-                    if (dict.prefix_length - max_edit_distance == candidate_len) &&
-                        (min_distance > 1 && phrase[phrase_len + 1 - min_distance:end] != suggestion[suggestion_len + 1 - min_distance:end]) ||
-                        (min_distance > 0 &&
-                            phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance] &&
-                            (phrase[phrase_len - min_distance - 1] != suggestion[suggestion_len - min_distance] ||
-                                phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance - 1]
-                            ))
-                        continue
-                    else
-                        # delete_in_suggestion_prefix is somewhat
-                        # expensive, and only pays off when
-                        # verbosity is TOP or CLOSEST
-                        if (verbosity != VerbosityALL &&
-                            !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length)) ||
-                            (suggestion in considered_suggestions)
+                # delete_in_suggestion_prefix is somewhat
+                # expensive, and only pays off when
+                # verbosity is TOP or CLOSEST
+                if (verbosity != VerbosityALL &&
+                    !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length)) ||
+                    (suggestion in considered_suggestions)
+                    continue
+                end
+                push!(considered_suggestions, suggestion)
+                distance = evaluate(compare_algorithm, phrase, suggestion)
+
+                # do not process higher distances than those
+                # already found, if verbosity<ALL (note:
+                # max_edit_distance_2 will always equal
+                # max_edit_distance when Verbosity.ALL)
+                if distance <= max_edit_distance_2
+                    suggestion_cnt = dict.words[suggestion]
+                    si = SuggestItem(suggestion, distance, suggestion_cnt)
+                    if !isempty(suggestions)
+                        if verbosity == VerbosityCLOSEST
+                            # we will calculate DamLev distance
+                            # only to the smallest found distance
+                            # so far
+                            if distance < max_edit_distance_2
+                                suggestions = []
+                            end
+                        elseif verbosity == VerbosityTOP
+                            if distance < max_edit_distance_2 ||
+                                suggestion_cnt > suggestions[1].count
+                                suggestions[1] = si
+                            end
                             continue
                         end
-                        push!(considered_suggestions, suggestion)
-                        # TODO - fix this stuff
-                        distance = evaluate(compare_algorithm, phrase, suggestion) # distance_comparer.compare(phrase, suggestion, max_edit_distance_2)
-                        distance > max_edit_distance_2 && continue
-                        # distance < 0 && continue
                     end
-
-                    # do not process higher distances than those
-                    # already found, if verbosity<ALL (note:
-                    # max_edit_distance_2 will always equal
-                    # max_edit_distance when Verbosity.ALL)
-                    if distance <= max_edit_distance_2
-                        suggestion_cnt = dict.words[suggestion]
-                        si = SuggestItem(suggestion, distance, suggestion_cnt)
-                        if !isempty(suggestions)
-                            if verbosity == VerbosityCLOSEST
-                                # we will calculate DamLev distance
-                                # only to the smallest found distance
-                                # so far
-                                if distance < max_edit_distance_2
-                                    suggestions = []
-                                end
-                            elseif verbosity == VerbosityTOP
-                                if distance < max_edit_distance_2 ||
-                                    suggestion_cnt > suggestions[1].count
-                                    suggestions[1] = si
-                                end
-                                continue
-                            end
-                        end
-                        if verbosity != VerbosityALL
-                            max_edit_distance_2 = distance
-                        end
-                        push!(suggestions, si)
+                    if verbosity != VerbosityALL
+                        max_edit_distance_2 = distance
                     end
+                    push!(suggestions, si)
                 end
             end
         end
