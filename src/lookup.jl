@@ -107,7 +107,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
     considered_suggestions = Set()
 
     # we considered the phrase already in the
-    # 'phrase in self._words' above
+    # 'phrase in keys(dict.words)' above
     push!(considered_suggestions, phrase)
 
     max_edit_distance_2 = max_edit_distance
@@ -117,7 +117,8 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
     phrase_prefix_len = min(phrase_len, dict.prefix_length)
     push!(candidates, phrase[1:phrase_prefix_len])
 
-    for candidate in candidates
+    while !isempty(candidates)
+        candidate = popfirst!(candidates)
         candidate_len = length(candidate)
         len_diff = phrase_prefix_len - candidate_len
         # early termination: if candidate distance is already
@@ -134,7 +135,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
 
         if candidate in keys(dict.deletes)
             for suggestion in dict.deletes[candidate]
-                suggestion == phrase && continue
+                suggestion in considered_suggestions && continue
                 suggestion_len = length(suggestion)
 
                 # phrase and suggestion lengths
@@ -182,13 +183,11 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                     # suggestion_len<=max_edit_distance)
 
                     distance = max(phrase_len, suggestion_len)
-                    (distance > max_edit_distance_2 || suggestion in considered_suggestions)
-                    continue
+                    distance > max_edit_distance_2 && continue
                 elseif suggestion_len == 1
                     # TODO: correct!!!
                     # distance = ??? phrase[suggestion[0]] < 0 ? phrase_len : phrase_len - 1
-                    (distance > max_edit_distance_2 || suggestion in considered_suggestions)
-                    continue
+                    distance > max_edit_distance_2 && continue
                 end
 
                 # number of edits in prefix == maxediddistance AND
@@ -220,9 +219,8 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                 # delete_in_suggestion_prefix is somewhat
                 # expensive, and only pays off when
                 # verbosity is TOP or CLOSEST
-                if (verbosity != VerbosityALL &&
-                    !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length)) ||
-                    (suggestion in considered_suggestions)
+                if verbosity != VerbosityALL &&
+                    !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length)
                     continue
                 end
                 push!(considered_suggestions, suggestion)
@@ -241,7 +239,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                             # only to the smallest found distance
                             # so far
                             if distance < max_edit_distance_2
-                                suggestions = []
+                                empty!(suggestions)
                             end
                         elseif verbosity == VerbosityTOP
                             if distance < max_edit_distance_2 ||

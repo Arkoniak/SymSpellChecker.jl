@@ -144,4 +144,12 @@ end
     @test length(result) == 1
     @test result[1].phrase == "24th"
 end
+
+@testset "no duplicates in lookup" begin
+    d = Dictionary()
+    push!(d, "bank", 10)
+    result = lookup(d, "xbank", verbosity = VerbosityALL)
+
+    @test length(result) == 1
+end
 end # module
