@@ -1,0 +1,818 @@
+Precalculation instance 0.087s 5.8MB 29,159 words 46,406 entries  MaxEditDistance=1 prefixLength=5 dict=30k
+Precalculation static   0.122s 11.3MB 29,159 words 70,124 entries  MaxEditDistance=1 prefixLength=5 dict=30k
+Lookup instance 1 results 0.000074ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000284ms/op verbosity=Top query=exact
+
+Lookup instance 0 results 0.001465ms/op verbosity=Top query=non-exact
+Lookup static   0 results 0.003971ms/op verbosity=Top query=non-exact
+
+Lookup instance 707 results 0.002650ms/op verbosity=Top query=mix
+Lookup static   707 results 0.003635ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000063ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000306ms/op verbosity=Closest query=exact
+
+Lookup instance 0 results 0.001093ms/op verbosity=Closest query=non-exact
+Lookup static   0 results 0.001197ms/op verbosity=Closest query=non-exact
+
+Lookup instance 1,903 results 0.003042ms/op verbosity=Closest query=mix
+Lookup static   1,903 results 0.003391ms/op verbosity=Closest query=mix
+
+Lookup instance 1 results 0.002453ms/op verbosity=All query=exact
+Lookup static   1 results 0.002887ms/op verbosity=All query=exact
+
+Lookup instance 0 results 0.000969ms/op verbosity=All query=non-exact
+Lookup static   0 results 0.001154ms/op verbosity=All query=non-exact
+
+Lookup instance 5,371 results 0.005018ms/op verbosity=All query=mix
+Lookup static   5,371 results 0.006331ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.241s 14.0MB 82,765 words 85,574 entries  MaxEditDistance=1 prefixLength=5 dict=82k
+Precalculation static   0.453s 27.2MB 82,765 words 155,879 entries  MaxEditDistance=1 prefixLength=5 dict=82k
+Lookup instance 1 results 0.000064ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000290ms/op verbosity=Top query=exact
+
+Lookup instance 0 results 0.001724ms/op verbosity=Top query=non-exact
+Lookup static   0 results 0.002638ms/op verbosity=Top query=non-exact
+
+Lookup instance 717 results 0.010707ms/op verbosity=Top query=mix
+Lookup static   717 results 0.006020ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000061ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000281ms/op verbosity=Closest query=exact
+
+Lookup instance 0 results 0.005605ms/op verbosity=Closest query=non-exact
+Lookup static   0 results 0.002743ms/op verbosity=Closest query=non-exact
+
+Lookup instance 2,645 results 0.004094ms/op verbosity=Closest query=mix
+Lookup static   2,645 results 0.006005ms/op verbosity=Closest query=mix
+
+Lookup instance 1 results 0.003235ms/op verbosity=All query=exact
+Lookup static   1 results 0.004818ms/op verbosity=All query=exact
+
+Lookup instance 0 results 0.001593ms/op verbosity=All query=non-exact
+Lookup static   0 results 0.001673ms/op verbosity=All query=non-exact
+
+Lookup instance 7,158 results 0.008477ms/op verbosity=All query=mix
+Lookup static   7,158 results 0.012749ms/op verbosity=All query=mix
+
+
+Precalculation instance 1.726s 73.5MB 500,000 words 293,845 entries  MaxEditDistance=1 prefixLength=5 dict=500k
+Precalculation static   3.573s 152.6MB 500,000 words 691,779 entries  MaxEditDistance=1 prefixLength=5 dict=500k
+Lookup instance 1 results 0.000068ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000293ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.008264ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.005459ms/op verbosity=Top query=non-exact
+
+Lookup instance 793 results 0.010586ms/op verbosity=Top query=mix
+Lookup static   793 results 0.013873ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000062ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000378ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.005622ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.005464ms/op verbosity=Closest query=non-exact
+
+Lookup instance 3,015 results 0.009873ms/op verbosity=Closest query=mix
+Lookup static   3,015 results 0.014428ms/op verbosity=Closest query=mix
+
+Lookup instance 30 results 0.025627ms/op verbosity=All query=exact
+Lookup static   30 results 0.027674ms/op verbosity=All query=exact
+
+Lookup instance 8 results 0.004873ms/op verbosity=All query=non-exact
+Lookup static   8 results 0.005279ms/op verbosity=All query=non-exact
+
+Lookup instance 34,814 results 0.035556ms/op verbosity=All query=mix
+Lookup static   34,814 results 0.051096ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.079s 8.5MB 29,159 words 91,760 entries  MaxEditDistance=1 prefixLength=6 dict=30k
+Precalculation static   0.121s 15.9MB 29,159 words 111,538 entries  MaxEditDistance=1 prefixLength=6 dict=30k
+Lookup instance 1 results 0.000076ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000310ms/op verbosity=Top query=exact
+
+Lookup instance 0 results 0.001386ms/op verbosity=Top query=non-exact
+Lookup static   0 results 0.004718ms/op verbosity=Top query=non-exact
+
+Lookup instance 707 results 0.002729ms/op verbosity=Top query=mix
+Lookup static   707 results 0.003354ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000064ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000283ms/op verbosity=Closest query=exact
+
+Lookup instance 0 results 0.001301ms/op verbosity=Closest query=non-exact
+Lookup static   0 results 0.001325ms/op verbosity=Closest query=non-exact
+
+Lookup instance 1,903 results 0.002334ms/op verbosity=Closest query=mix
+Lookup static   1,903 results 0.003049ms/op verbosity=Closest query=mix
+
+Lookup instance 1 results 0.002160ms/op verbosity=All query=exact
+Lookup static   1 results 0.002747ms/op verbosity=All query=exact
+
+Lookup instance 0 results 0.001272ms/op verbosity=All query=non-exact
+Lookup static   0 results 0.001252ms/op verbosity=All query=non-exact
+
+Lookup instance 5,371 results 0.004729ms/op verbosity=All query=mix
+Lookup static   5,371 results 0.005279ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.265s 20.7MB 82,765 words 198,767 entries  MaxEditDistance=1 prefixLength=6 dict=82k
+Precalculation static   0.476s 40.9MB 82,765 words 259,356 entries  MaxEditDistance=1 prefixLength=6 dict=82k
+Lookup instance 1 results 0.000069ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000303ms/op verbosity=Top query=exact
+
+Lookup instance 0 results 0.002149ms/op verbosity=Top query=non-exact
+Lookup static   0 results 0.002125ms/op verbosity=Top query=non-exact
+
+Lookup instance 717 results 0.003044ms/op verbosity=Top query=mix
+Lookup static   717 results 0.011424ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000064ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000335ms/op verbosity=Closest query=exact
+
+Lookup instance 0 results 0.004719ms/op verbosity=Closest query=non-exact
+Lookup static   0 results 0.002143ms/op verbosity=Closest query=non-exact
+
+Lookup instance 2,645 results 0.003295ms/op verbosity=Closest query=mix
+Lookup static   2,645 results 0.003927ms/op verbosity=Closest query=mix
+
+Lookup instance 1 results 0.002511ms/op verbosity=All query=exact
+Lookup static   1 results 0.003240ms/op verbosity=All query=exact
+
+Lookup instance 0 results 0.001938ms/op verbosity=All query=non-exact
+Lookup static   0 results 0.001886ms/op verbosity=All query=non-exact
+
+Lookup instance 7,158 results 0.006094ms/op verbosity=All query=mix
+Lookup static   7,158 results 0.008175ms/op verbosity=All query=mix
+
+
+Precalculation instance 1.858s 101.0MB 500,000 words 804,264 entries  MaxEditDistance=1 prefixLength=6 dict=500k
+Precalculation static   3.939s 188.9MB 500,000 words 1,149,260 entries  MaxEditDistance=1 prefixLength=6 dict=500k
+Lookup instance 1 results 0.000069ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000308ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.024057ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.004817ms/op verbosity=Top query=non-exact
+
+Lookup instance 793 results 0.004933ms/op verbosity=Top query=mix
+Lookup static   793 results 0.006297ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000060ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000279ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.005333ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.004911ms/op verbosity=Closest query=non-exact
+
+Lookup instance 3,015 results 0.004941ms/op verbosity=Closest query=mix
+Lookup static   3,015 results 0.006324ms/op verbosity=Closest query=mix
+
+Lookup instance 30 results 0.017572ms/op verbosity=All query=exact
+Lookup static   30 results 0.022674ms/op verbosity=All query=exact
+
+Lookup instance 8 results 0.004910ms/op verbosity=All query=non-exact
+Lookup static   8 results 0.005119ms/op verbosity=All query=non-exact
+
+Lookup instance 34,814 results 0.026444ms/op verbosity=All query=mix
+Lookup static   34,814 results 0.034004ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.094s 10.8MB 29,159 words 132,168 entries  MaxEditDistance=1 prefixLength=7 dict=30k
+Precalculation static   0.151s 17.1MB 29,159 words 147,495 entries  MaxEditDistance=1 prefixLength=7 dict=30k
+Lookup instance 1 results 0.000064ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000284ms/op verbosity=Top query=exact
+
+Lookup instance 0 results 0.000979ms/op verbosity=Top query=non-exact
+Lookup static   0 results 0.003126ms/op verbosity=Top query=non-exact
+
+Lookup instance 707 results 0.002269ms/op verbosity=Top query=mix
+Lookup static   707 results 0.003009ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000073ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000359ms/op verbosity=Closest query=exact
+
+Lookup instance 0 results 0.000969ms/op verbosity=Closest query=non-exact
+Lookup static   0 results 0.000990ms/op verbosity=Closest query=non-exact
+
+Lookup instance 1,903 results 0.002315ms/op verbosity=Closest query=mix
+Lookup static   1,903 results 0.002662ms/op verbosity=Closest query=mix
+
+Lookup instance 1 results 0.001835ms/op verbosity=All query=exact
+Lookup static   1 results 0.002421ms/op verbosity=All query=exact
+
+Lookup instance 0 results 0.000901ms/op verbosity=All query=non-exact
+Lookup static   0 results 0.000993ms/op verbosity=All query=non-exact
+
+Lookup instance 5,371 results 0.004214ms/op verbosity=All query=mix
+Lookup static   5,371 results 0.004852ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.294s 26.5MB 82,765 words 315,541 entries  MaxEditDistance=1 prefixLength=7 dict=82k
+Precalculation static   0.560s 54.6MB 82,765 words 365,072 entries  MaxEditDistance=1 prefixLength=7 dict=82k
+Lookup instance 1 results 0.000084ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000354ms/op verbosity=Top query=exact
+
+Lookup instance 0 results 0.001427ms/op verbosity=Top query=non-exact
+Lookup static   0 results 0.005419ms/op verbosity=Top query=non-exact
+
+Lookup instance 717 results 0.003202ms/op verbosity=Top query=mix
+Lookup static   717 results 0.003553ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000144ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000270ms/op verbosity=Closest query=exact
+
+Lookup instance 0 results 0.001230ms/op verbosity=Closest query=non-exact
+Lookup static   0 results 0.001020ms/op verbosity=Closest query=non-exact
+
+Lookup instance 2,645 results 0.003429ms/op verbosity=Closest query=mix
+Lookup static   2,645 results 0.003454ms/op verbosity=Closest query=mix
+
+Lookup instance 1 results 0.002088ms/op verbosity=All query=exact
+Lookup static   1 results 0.002737ms/op verbosity=All query=exact
+
+Lookup instance 0 results 0.001076ms/op verbosity=All query=non-exact
+Lookup static   0 results 0.000995ms/op verbosity=All query=non-exact
+
+Lookup instance 7,158 results 0.005501ms/op verbosity=All query=mix
+Lookup static   7,158 results 0.007038ms/op verbosity=All query=mix
+
+
+Precalculation instance 2.278s 141.8MB 500,000 words 1,471,159 entries  MaxEditDistance=1 prefixLength=7 dict=500k
+Precalculation static   4.317s 264.3MB 500,000 words 1,788,834 entries  MaxEditDistance=1 prefixLength=7 dict=500k
+Lookup instance 1 results 0.000068ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000293ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.003965ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.014359ms/op verbosity=Top query=non-exact
+
+Lookup instance 793 results 0.003901ms/op verbosity=Top query=mix
+Lookup static   793 results 0.005360ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000105ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000370ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.002919ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.002909ms/op verbosity=Closest query=non-exact
+
+Lookup instance 3,015 results 0.004186ms/op verbosity=Closest query=mix
+Lookup static   3,015 results 0.005011ms/op verbosity=Closest query=mix
+
+Lookup instance 30 results 0.016518ms/op verbosity=All query=exact
+Lookup static   30 results 0.017000ms/op verbosity=All query=exact
+
+Lookup instance 8 results 0.002835ms/op verbosity=All query=non-exact
+Lookup static   8 results 0.002747ms/op verbosity=All query=non-exact
+
+Lookup instance 34,814 results 0.022867ms/op verbosity=All query=mix
+Lookup static   34,814 results 0.031963ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.152s 8.2MB 29,159 words 53,248 entries  MaxEditDistance=2 prefixLength=5 dict=30k
+Precalculation static   0.272s 15.7MB 29,159 words 77,032 entries  MaxEditDistance=2 prefixLength=5 dict=30k
+Lookup instance 1 results 0.000063ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000326ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.017969ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.014640ms/op verbosity=Top query=non-exact
+
+Lookup instance 934 results 0.015439ms/op verbosity=Top query=mix
+Lookup static   934 results 0.020833ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000080ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000368ms/op verbosity=Closest query=exact
+
+Lookup instance 3 results 0.013848ms/op verbosity=Closest query=non-exact
+Lookup static   3 results 0.014172ms/op verbosity=Closest query=non-exact
+
+Lookup instance 3,886 results 0.014302ms/op verbosity=Closest query=mix
+Lookup static   3,886 results 0.020465ms/op verbosity=Closest query=mix
+
+Lookup instance 9 results 0.021852ms/op verbosity=All query=exact
+Lookup static   9 results 0.023075ms/op verbosity=All query=exact
+
+Lookup instance 3 results 0.014628ms/op verbosity=All query=non-exact
+Lookup static   3 results 0.014736ms/op verbosity=All query=non-exact
+
+Lookup instance 77,311 results 0.063602ms/op verbosity=All query=mix
+Lookup static   77,311 results 0.085482ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.507s 20.4MB 82,765 words 92,787 entries  MaxEditDistance=2 prefixLength=5 dict=82k
+Precalculation static   0.983s 37.8MB 82,765 words 163,223 entries  MaxEditDistance=2 prefixLength=5 dict=82k
+Lookup instance 1 results 0.000071ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000294ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.046913ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.049813ms/op verbosity=Top query=non-exact
+
+Lookup instance 941 results 0.035813ms/op verbosity=Top query=mix
+Lookup static   941 results 0.051226ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000059ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000367ms/op verbosity=Closest query=exact
+
+Lookup instance 32 results 0.047397ms/op verbosity=Closest query=non-exact
+Lookup static   32 results 0.049049ms/op verbosity=Closest query=non-exact
+
+Lookup instance 4,945 results 0.033644ms/op verbosity=Closest query=mix
+Lookup static   4,945 results 0.049592ms/op verbosity=Closest query=mix
+
+Lookup instance 11 results 0.050250ms/op verbosity=All query=exact
+Lookup static   11 results 0.060410ms/op verbosity=All query=exact
+
+Lookup instance 32 results 0.042290ms/op verbosity=All query=non-exact
+Lookup static   32 results 0.051692ms/op verbosity=All query=non-exact
+
+Lookup instance 126,961 results 0.151335ms/op verbosity=All query=mix
+Lookup static   126,961 results 0.204130ms/op verbosity=All query=mix
+
+
+Precalculation instance 3.451s 108.0MB 500,000 words 302,374 entries  MaxEditDistance=2 prefixLength=5 dict=500k
+Precalculation static   8.245s 178.3MB 500,000 words 700,535 entries  MaxEditDistance=2 prefixLength=5 dict=500k
+Lookup instance 1 results 0.000069ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000286ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.017342ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.015142ms/op verbosity=Top query=non-exact
+
+Lookup instance 959 results 0.142411ms/op verbosity=Top query=mix
+Lookup static   959 results 0.212571ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000074ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000420ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.015291ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.013507ms/op verbosity=Closest query=non-exact
+
+Lookup instance 6,082 results 0.136624ms/op verbosity=Closest query=mix
+Lookup static   6,082 results 0.212486ms/op verbosity=Closest query=mix
+
+Lookup instance 65 results 0.363013ms/op verbosity=All query=exact
+Lookup static   65 results 0.479970ms/op verbosity=All query=exact
+
+Lookup instance 115 results 0.273892ms/op verbosity=All query=non-exact
+Lookup static   115 results 0.326662ms/op verbosity=All query=non-exact
+
+Lookup instance 869,864 results 1.221155ms/op verbosity=All query=mix
+Lookup static   869,864 results 1.691654ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.218s 13.9MB 29,159 words 149,183 entries  MaxEditDistance=2 prefixLength=6 dict=30k
+Precalculation static   0.463s 28.8MB 29,159 words 169,623 entries  MaxEditDistance=2 prefixLength=6 dict=30k
+Lookup instance 1 results 0.000065ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000360ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.018118ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.015320ms/op verbosity=Top query=non-exact
+
+Lookup instance 934 results 0.008266ms/op verbosity=Top query=mix
+Lookup static   934 results 0.012364ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000058ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000265ms/op verbosity=Closest query=exact
+
+Lookup instance 3 results 0.015397ms/op verbosity=Closest query=non-exact
+Lookup static   3 results 0.015054ms/op verbosity=Closest query=non-exact
+
+Lookup instance 3,886 results 0.008516ms/op verbosity=Closest query=mix
+Lookup static   3,886 results 0.011419ms/op verbosity=Closest query=mix
+
+Lookup instance 9 results 0.011574ms/op verbosity=All query=exact
+Lookup static   9 results 0.012826ms/op verbosity=All query=exact
+
+Lookup instance 3 results 0.015177ms/op verbosity=All query=non-exact
+Lookup static   3 results 0.015661ms/op verbosity=All query=non-exact
+
+Lookup instance 77,311 results 0.050136ms/op verbosity=All query=mix
+Lookup static   77,311 results 0.058382ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.740s 33.6MB 82,765 words 283,660 entries  MaxEditDistance=2 prefixLength=6 dict=82k
+Precalculation static   1.535s 65.3MB 82,765 words 345,929 entries  MaxEditDistance=2 prefixLength=6 dict=82k
+Lookup instance 1 results 0.000061ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000285ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.055856ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.047303ms/op verbosity=Top query=non-exact
+
+Lookup instance 941 results 0.017637ms/op verbosity=Top query=mix
+Lookup static   941 results 0.024241ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000065ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000313ms/op verbosity=Closest query=exact
+
+Lookup instance 32 results 0.053837ms/op verbosity=Closest query=non-exact
+Lookup static   32 results 0.049115ms/op verbosity=Closest query=non-exact
+
+Lookup instance 4,945 results 0.014895ms/op verbosity=Closest query=mix
+Lookup static   4,945 results 0.021746ms/op verbosity=Closest query=mix
+
+Lookup instance 11 results 0.020138ms/op verbosity=All query=exact
+Lookup static   11 results 0.022321ms/op verbosity=All query=exact
+
+Lookup instance 32 results 0.047979ms/op verbosity=All query=non-exact
+Lookup static   32 results 0.049064ms/op verbosity=All query=non-exact
+
+Lookup instance 126,961 results 0.092335ms/op verbosity=All query=mix
+Lookup static   126,961 results 0.119577ms/op verbosity=All query=mix
+
+
+Precalculation instance 5.123s 157.0MB 500,000 words 943,603 entries  MaxEditDistance=2 prefixLength=6 dict=500k
+Precalculation static   10.365s 241.0MB 500,000 words 1,296,695 entries  MaxEditDistance=2 prefixLength=6 dict=500k
+Lookup instance 1 results 0.000068ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000298ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.013504ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.005886ms/op verbosity=Top query=non-exact
+
+Lookup instance 959 results 0.035485ms/op verbosity=Top query=mix
+Lookup static   959 results 0.055356ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000062ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000294ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.007130ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.005037ms/op verbosity=Closest query=non-exact
+
+Lookup instance 6,082 results 0.035487ms/op verbosity=Closest query=mix
+Lookup static   6,082 results 0.053876ms/op verbosity=Closest query=mix
+
+Lookup instance 65 results 0.166525ms/op verbosity=All query=exact
+Lookup static   65 results 0.203503ms/op verbosity=All query=exact
+
+Lookup instance 115 results 0.188827ms/op verbosity=All query=non-exact
+Lookup static   115 results 0.205283ms/op verbosity=All query=non-exact
+
+Lookup instance 869,864 results 0.713638ms/op verbosity=All query=mix
+Lookup static   869,864 results 1.080731ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.307s 23.1MB 29,159 words 308,736 entries  MaxEditDistance=2 prefixLength=7 dict=30k
+Precalculation static   0.573s 49.4MB 29,159 words 326,636 entries  MaxEditDistance=2 prefixLength=7 dict=30k
+Lookup instance 1 results 0.000069ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000359ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.015324ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.009001ms/op verbosity=Top query=non-exact
+
+Lookup instance 934 results 0.007583ms/op verbosity=Top query=mix
+Lookup static   934 results 0.009984ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000057ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000261ms/op verbosity=Closest query=exact
+
+Lookup instance 3 results 0.008437ms/op verbosity=Closest query=non-exact
+Lookup static   3 results 0.009083ms/op verbosity=Closest query=non-exact
+
+Lookup instance 3,886 results 0.007539ms/op verbosity=Closest query=mix
+Lookup static   3,886 results 0.010361ms/op verbosity=Closest query=mix
+
+Lookup instance 9 results 0.010633ms/op verbosity=All query=exact
+Lookup static   9 results 0.011889ms/op verbosity=All query=exact
+
+Lookup instance 3 results 0.008017ms/op verbosity=All query=non-exact
+Lookup static   3 results 0.008378ms/op verbosity=All query=non-exact
+
+Lookup instance 77,311 results 0.042173ms/op verbosity=All query=mix
+Lookup static   77,311 results 0.055957ms/op verbosity=All query=mix
+
+
+Precalculation instance 1.031s 54.6MB 82,765 words 660,957 entries  MaxEditDistance=2 prefixLength=7 dict=82k
+Precalculation static   2.003s 116.5MB 82,765 words 721,812 entries  MaxEditDistance=2 prefixLength=7 dict=82k
+Lookup instance 1 results 0.000113ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000556ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.027085ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.018616ms/op verbosity=Top query=non-exact
+
+Lookup instance 941 results 0.011304ms/op verbosity=Top query=mix
+Lookup static   941 results 0.016829ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000060ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000288ms/op verbosity=Closest query=exact
+
+Lookup instance 32 results 0.019652ms/op verbosity=Closest query=non-exact
+Lookup static   32 results 0.017870ms/op verbosity=Closest query=non-exact
+
+Lookup instance 4,945 results 0.011075ms/op verbosity=Closest query=mix
+Lookup static   4,945 results 0.016742ms/op verbosity=Closest query=mix
+
+Lookup instance 11 results 0.014392ms/op verbosity=All query=exact
+Lookup static   11 results 0.015963ms/op verbosity=All query=exact
+
+Lookup instance 32 results 0.019419ms/op verbosity=All query=non-exact
+Lookup static   32 results 0.019585ms/op verbosity=All query=non-exact
+
+Lookup instance 126,961 results 0.083967ms/op verbosity=All query=mix
+Lookup static   126,961 results 0.102559ms/op verbosity=All query=mix
+
+
+Precalculation instance 6.505s 244.2MB 500,000 words 2,357,898 entries  MaxEditDistance=2 prefixLength=7 dict=500k
+Precalculation static   13.684s 415.6MB 500,000 words 2,794,500 entries  MaxEditDistance=2 prefixLength=7 dict=500k
+Lookup instance 1 results 0.000129ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000674ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.005220ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.023855ms/op verbosity=Top query=non-exact
+
+Lookup instance 959 results 0.017690ms/op verbosity=Top query=mix
+Lookup static   959 results 0.028742ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000061ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000284ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.004232ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.006356ms/op verbosity=Closest query=non-exact
+
+Lookup instance 6,082 results 0.017393ms/op verbosity=Closest query=mix
+Lookup static   6,082 results 0.028794ms/op verbosity=Closest query=mix
+
+Lookup instance 65 results 0.095837ms/op verbosity=All query=exact
+Lookup static   65 results 0.106057ms/op verbosity=All query=exact
+
+Lookup instance 115 results 0.080157ms/op verbosity=All query=non-exact
+Lookup static   115 results 0.090002ms/op verbosity=All query=non-exact
+
+Lookup instance 869,864 results 0.649064ms/op verbosity=All query=mix
+Lookup static   869,864 results 1.021416ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.253s 10.2MB 29,159 words 53,332 entries  MaxEditDistance=3 prefixLength=5 dict=30k
+Precalculation static   0.481s 17.1MB 29,159 words 77,116 entries  MaxEditDistance=3 prefixLength=5 dict=30k
+Lookup instance 1 results 0.000063ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000282ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.035861ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.036584ms/op verbosity=Top query=non-exact
+
+Lookup instance 990 results 0.057036ms/op verbosity=Top query=mix
+Lookup static   990 results 0.074879ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000061ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000276ms/op verbosity=Closest query=exact
+
+Lookup instance 3 results 0.034270ms/op verbosity=Closest query=non-exact
+Lookup static   3 results 0.033802ms/op verbosity=Closest query=non-exact
+
+Lookup instance 4,323 results 0.054157ms/op verbosity=Closest query=mix
+Lookup static   4,323 results 0.075004ms/op verbosity=Closest query=mix
+
+Lookup instance 15 results 0.364437ms/op verbosity=All query=exact
+Lookup static   15 results 0.437246ms/op verbosity=All query=exact
+
+Lookup instance 88 results 0.310060ms/op verbosity=All query=non-exact
+Lookup static   88 results 0.362453ms/op verbosity=All query=non-exact
+
+Lookup instance 555,555 results 0.700947ms/op verbosity=All query=mix
+Lookup static   555,555 results 1.052506ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.850s 26.0MB 82,765 words 92,841 entries  MaxEditDistance=3 prefixLength=5 dict=82k
+Precalculation static   1.988s 42.0MB 82,765 words 163,277 entries  MaxEditDistance=3 prefixLength=5 dict=82k
+Lookup instance 1 results 0.000090ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000284ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.131187ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.128838ms/op verbosity=Top query=non-exact
+
+Lookup instance 991 results 0.137389ms/op verbosity=Top query=mix
+Lookup static   991 results 0.206485ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000067ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000380ms/op verbosity=Closest query=exact
+
+Lookup instance 32 results 0.126085ms/op verbosity=Closest query=non-exact
+Lookup static   32 results 0.123702ms/op verbosity=Closest query=non-exact
+
+Lookup instance 5,428 results 0.139595ms/op verbosity=Closest query=mix
+Lookup static   5,428 results 0.210209ms/op verbosity=Closest query=mix
+
+Lookup instance 20 results 0.992469ms/op verbosity=All query=exact
+Lookup static   20 results 1.351776ms/op verbosity=All query=exact
+
+Lookup instance 317 results 0.959167ms/op verbosity=All query=non-exact
+Lookup static   317 results 1.186243ms/op verbosity=All query=non-exact
+
+Lookup instance 1,130,927 results 2.075931ms/op verbosity=All query=mix
+Lookup static   1,130,927 results 3.045867ms/op verbosity=All query=mix
+
+
+Precalculation instance 5.489s 140.8MB 500,000 words 302,831 entries  MaxEditDistance=3 prefixLength=5 dict=500k
+Precalculation static   34.158s 202.3MB 500,000 words 700,992 entries  MaxEditDistance=3 prefixLength=5 dict=500k
+Lookup instance 1 results 0.000147ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000652ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.030864ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.023148ms/op verbosity=Top query=non-exact
+
+Lookup instance 994 results 0.728091ms/op verbosity=Top query=mix
+Lookup static   994 results 1.074898ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000078ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.001207ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.023153ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.016036ms/op verbosity=Closest query=non-exact
+
+Lookup instance 6,775 results 0.741678ms/op verbosity=Closest query=mix
+Lookup static   6,775 results 0.977979ms/op verbosity=Closest query=mix
+
+Lookup instance 144 results 10.560551ms/op verbosity=All query=exact
+Lookup static   144 results 13.981290ms/op verbosity=All query=exact
+
+Lookup instance 1,669 results 9.594559ms/op verbosity=All query=non-exact
+Lookup static   1,669 results 12.230263ms/op verbosity=All query=non-exact
+
+Lookup instance 8,775,261 results 18.729446ms/op verbosity=All query=mix
+Lookup static   8,775,261 results 25.114279ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.455s 17.6MB 29,159 words 154,498 entries  MaxEditDistance=3 prefixLength=6 dict=30k
+Precalculation static   0.794s 32.1MB 29,159 words 175,059 entries  MaxEditDistance=3 prefixLength=6 dict=30k
+Lookup instance 1 results 0.000123ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000638ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.020864ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.015210ms/op verbosity=Top query=non-exact
+
+Lookup instance 990 results 0.021538ms/op verbosity=Top query=mix
+Lookup static   990 results 0.030026ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000060ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000274ms/op verbosity=Closest query=exact
+
+Lookup instance 3 results 0.015162ms/op verbosity=Closest query=non-exact
+Lookup static   3 results 0.015495ms/op verbosity=Closest query=non-exact
+
+Lookup instance 4,323 results 0.025379ms/op verbosity=Closest query=mix
+Lookup static   4,323 results 0.032006ms/op verbosity=Closest query=mix
+
+Lookup instance 15 results 0.174650ms/op verbosity=All query=exact
+Lookup static   15 results 0.204881ms/op verbosity=All query=exact
+
+Lookup instance 88 results 0.281995ms/op verbosity=All query=non-exact
+Lookup static   88 results 0.310249ms/op verbosity=All query=non-exact
+
+Lookup instance 555,555 results 0.403470ms/op verbosity=All query=mix
+Lookup static   555,555 results 0.576939ms/op verbosity=All query=mix
+
+
+Precalculation instance 1.470s 44.2MB 82,765 words 288,675 entries  MaxEditDistance=3 prefixLength=6 dict=82k
+Precalculation static   2.882s 73.5MB 82,765 words 351,110 entries  MaxEditDistance=3 prefixLength=6 dict=82k
+Lookup instance 1 results 0.000068ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000383ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.055836ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.050409ms/op verbosity=Top query=non-exact
+
+Lookup instance 991 results 0.046111ms/op verbosity=Top query=mix
+Lookup static   991 results 0.070459ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000060ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000311ms/op verbosity=Closest query=exact
+
+Lookup instance 32 results 0.054465ms/op verbosity=Closest query=non-exact
+Lookup static   32 results 0.049999ms/op verbosity=Closest query=non-exact
+
+Lookup instance 5,428 results 0.045427ms/op verbosity=Closest query=mix
+Lookup static   5,428 results 0.076894ms/op verbosity=Closest query=mix
+
+Lookup instance 20 results 0.452707ms/op verbosity=All query=exact
+Lookup static   20 results 0.560666ms/op verbosity=All query=exact
+
+Lookup instance 317 results 0.819957ms/op verbosity=All query=non-exact
+Lookup static   317 results 0.939338ms/op verbosity=All query=non-exact
+
+Lookup instance 1,130,927 results 1.074801ms/op verbosity=All query=mix
+Lookup static   1,130,927 results 1.464291ms/op verbosity=All query=mix
+
+
+Precalculation instance 9.192s 217.5MB 500,000 words 950,749 entries  MaxEditDistance=3 prefixLength=6 dict=500k
+Precalculation static   26.409s 285.1MB 500,000 words 1,304,359 entries  MaxEditDistance=3 prefixLength=6 dict=500k
+Lookup instance 1 results 0.000168ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000563ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.019923ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.008042ms/op verbosity=Top query=non-exact
+
+Lookup instance 994 results 0.266173ms/op verbosity=Top query=mix
+Lookup static   994 results 0.314735ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000105ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000746ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.009009ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.007987ms/op verbosity=Closest query=non-exact
+
+Lookup instance 6,775 results 0.223841ms/op verbosity=Closest query=mix
+Lookup static   6,775 results 0.302874ms/op verbosity=Closest query=mix
+
+Lookup instance 144 results 5.327968ms/op verbosity=All query=exact
+Lookup static   144 results 12.180761ms/op verbosity=All query=exact
+
+Lookup instance 1,669 results 7.907502ms/op verbosity=All query=non-exact
+Lookup static   1,669 results 9.876324ms/op verbosity=All query=non-exact
+
+Lookup instance 8,775,261 results 10.729313ms/op verbosity=All query=mix
+Lookup static   8,775,261 results 15.041307ms/op verbosity=All query=mix
+
+
+Precalculation instance 0.710s 32.0MB 29,159 words 375,834 entries  MaxEditDistance=3 prefixLength=7 dict=30k
+Precalculation static   1.305s 61.2MB 29,159 words 395,566 entries  MaxEditDistance=3 prefixLength=7 dict=30k
+Lookup instance 1 results 0.000064ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000279ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.014912ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.017181ms/op verbosity=Top query=non-exact
+
+Lookup instance 990 results 0.012856ms/op verbosity=Top query=mix
+Lookup static   990 results 0.021058ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000064ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000280ms/op verbosity=Closest query=exact
+
+Lookup instance 3 results 0.008815ms/op verbosity=Closest query=non-exact
+Lookup static   3 results 0.019239ms/op verbosity=Closest query=non-exact
+
+Lookup instance 4,323 results 0.014756ms/op verbosity=Closest query=mix
+Lookup static   4,323 results 0.019761ms/op verbosity=Closest query=mix
+
+Lookup instance 15 results 0.066198ms/op verbosity=All query=exact
+Lookup static   15 results 0.078481ms/op verbosity=All query=exact
+
+Lookup instance 88 results 0.130226ms/op verbosity=All query=non-exact
+Lookup static   88 results 0.139162ms/op verbosity=All query=non-exact
+
+Lookup instance 555,555 results 0.303025ms/op verbosity=All query=mix
+Lookup static   555,555 results 0.405939ms/op verbosity=All query=mix
+
+
+Precalculation instance 2.177s 76.8MB 82,765 words 749,061 entries  MaxEditDistance=3 prefixLength=7 dict=82k
+Precalculation static   4.279s 139.8MB 82,765 words 814,468 entries  MaxEditDistance=3 prefixLength=7 dict=82k
+Lookup instance 1 results 0.000065ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000317ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.025703ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.061650ms/op verbosity=Top query=non-exact
+
+Lookup instance 991 results 0.022535ms/op verbosity=Top query=mix
+Lookup static   991 results 0.037270ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000059ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000286ms/op verbosity=Closest query=exact
+
+Lookup instance 32 results 0.024084ms/op verbosity=Closest query=non-exact
+Lookup static   32 results 0.063377ms/op verbosity=Closest query=non-exact
+
+Lookup instance 5,428 results 0.026818ms/op verbosity=Closest query=mix
+Lookup static   5,428 results 0.037802ms/op verbosity=Closest query=mix
+
+Lookup instance 20 results 0.158502ms/op verbosity=All query=exact
+Lookup static   20 results 0.177706ms/op verbosity=All query=exact
+
+Lookup instance 317 results 0.366163ms/op verbosity=All query=non-exact
+Lookup static   317 results 0.409942ms/op verbosity=All query=non-exact
+
+Lookup instance 1,130,927 results 0.756655ms/op verbosity=All query=mix
+Lookup static   1,130,927 results 1.120303ms/op verbosity=All query=mix
+
+
+Precalculation instance 13.459s 353.8MB 500,000 words 2,477,133 entries  MaxEditDistance=3 prefixLength=7 dict=500k
+Precalculation static   28.412s 583.3MB 500,000 words 2,933,878 entries  MaxEditDistance=3 prefixLength=7 dict=500k
+Lookup instance 1 results 0.000072ms/op verbosity=Top query=exact
+Lookup static   1 results 0.000283ms/op verbosity=Top query=exact
+
+Lookup instance 1 results 0.009737ms/op verbosity=Top query=non-exact
+Lookup static   1 results 0.007156ms/op verbosity=Top query=non-exact
+
+Lookup instance 994 results 0.047101ms/op verbosity=Top query=mix
+Lookup static   994 results 0.087328ms/op verbosity=Top query=mix
+
+Lookup instance 1 results 0.000089ms/op verbosity=Closest query=exact
+Lookup static   1 results 0.000452ms/op verbosity=Closest query=exact
+
+Lookup instance 8 results 0.005653ms/op verbosity=Closest query=non-exact
+Lookup static   8 results 0.007070ms/op verbosity=Closest query=non-exact
+
+Lookup instance 6,775 results 0.055489ms/op verbosity=Closest query=mix
+Lookup static   6,775 results 0.098057ms/op verbosity=Closest query=mix
+
+Lookup instance 144 results 1.162748ms/op verbosity=All query=exact
+Lookup static   144 results 1.430904ms/op verbosity=All query=exact
+
+Lookup instance 1,669 results 2.556193ms/op verbosity=All query=non-exact
+Lookup static   1,669 results 3.712786ms/op verbosity=All query=non-exact
+
+Lookup instance 8,775,261 results 8.745115ms/op verbosity=All query=mix
+Lookup static   8,775,261 results 12.065880ms/op verbosity=All query=mix
+
+
+Average Precalculation time instance 2.186s   -61.3%
+Average Precalculation time static   5.650s
+Average Precalculation memory instance 73.5MB -40.9%
+Average Precalculation memory static   124.4MB
+Average Lookup time instance 0.390ms          -28.0%
+Average Lookup time static   0.542ms
+Total Lookup results instance 34,898,691      0 differences
+Total Lookup results static   34,898,691

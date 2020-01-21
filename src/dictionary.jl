@@ -23,19 +23,30 @@ function edits!(delete_words, word, edit_distance, max_dictionary_edit_distance)
     edit_distance += 1
     word_len = length(word)
     if word_len > 1
-        for i in 1:word_len
-            delete = word[1:(i - 1)] * word[(i + 1):end]
-            if !(delete in delete_words)
-                push!(delete_words, delete)
-                # recursion, if maximum edit distance not yet reached
-                if edit_distance < max_dictionary_edit_distance
-                    edits!(delete_words, delete, edit_distance, max_dictionary_edit_distance)
+        let i = 0
+            while i < lastindex(word)
+                delete = word[1:i] * word[nextind(word, nextind(word, i)):end]
+                i = nextind(word, i)
+                if !(delete in delete_words)
+                    push!(delete_words, delete)
+                    # recursion, if maximum edit distance not yet reached
+                    if edit_distance < max_dictionary_edit_distance
+                        edits!(delete_words, delete, edit_distance, max_dictionary_edit_distance)
+                    end
                 end
             end
         end
     end
 
     return delete_words
+end
+
+@inline function conv_idx(word, i)
+    k = 0
+    for j in 1:i
+        k = nextind(word, k)
+    end
+    k
 end
 
 function edits_prefix(key::S, max_dictionary_edit_distance, prefix_length) where S
@@ -45,7 +56,7 @@ function edits_prefix(key::S, max_dictionary_edit_distance, prefix_length) where
         push!(hash_set, "")
     end
     if length(key) > prefix_length
-        key = key[1:prefix_length]
+        key = key[1:conv_idx(key, prefix_length)]
     end
     push!(hash_set, key)
     edits!(hash_set, key, 0, max_dictionary_edit_distance)
@@ -105,8 +116,9 @@ function Base.:push!(dict::Dictionary{S, T}, key, cnt) where {T <: Integer, S <:
     return true
 end
 
-function Dictionary(path; sep = " ")
-    d = Dictionary()
+function Dictionary(path; sep = " ", max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1)
+    d = Dictionary(max_dictionary_edit_distance = max_dictionary_edit_distance,
+                    prefix_length = prefix_length, count_threshold = count_threshold)
     update!(d, path, sep = sep)
 end
 

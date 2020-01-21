@@ -51,18 +51,25 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         transfer_casing = false, verbosity = VerbosityTOP,
         max_edit_distance = dict.max_dictionary_edit_distance,
         compare_algorithm = DamerauLevenshtein())
+
+        lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, verbosity, max_edit_distance, compare_algorithm)
+end
+function lookup(dict, phrase::S, include_unknown, ignore_token,
+                transfer_casing, verbosity,
+                max_edit_distance,
+                compare_algorithm) where S
     if max_edit_distance > dict.max_dictionary_edit_distance
         throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_dictionary_edit_distance)"))
     end
 
-    suggestions = SuggestItem[]
+    suggestions = SuggestItem{S}[]
     phrase_len = length(phrase)
 
     if transfer_casing
         phrase = lowercase(phrase)
     end
 
-    function early_exit()
+    function early_exit(phrase)
         if include_unknown && isempty(suggestions)
             push!(suggestions, SuggestItem(phrase, max_edit_distance + 1, 0))
         end
@@ -71,7 +78,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
 
     # early exit - word is too big to possibly match any words
     if phrase_len - max_edit_distance > dict.max_length
-        return early_exit()
+        return early_exit(phrase)
     end
 
     # quick look for exact match
@@ -83,7 +90,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         # early exit - return exact match, unless caller wants all
         # matches
         if verbosity != VerbosityALL
-            return early_exit()
+            return early_exit(phrase)
         end
     end
 
@@ -93,25 +100,25 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         # early exit - return exact match, unless caller wants all
         # matches
         if verbosity != VerbosityALL
-            return early_exit()
+            return early_exit(phrase)
         end
     end
 
     # early termination, if we only want to check if word in
     # dictionary or get its frequency e.g. for word segmentation
     if max_edit_distance == 0
-        return early_exit()
+        return early_exit(phrase)
     end
 
-    considered_deletes = Set()
-    considered_suggestions = Set()
+    considered_deletes = Set{S}()
+    considered_suggestions = Set{S}()
 
     # we considered the phrase already in the
     # 'phrase in keys(dict.words)' above
     push!(considered_suggestions, phrase)
 
     max_edit_distance_2 = max_edit_distance
-    candidates = []
+    candidates = S[]
 
     # add original prefix
     phrase_prefix_len = min(phrase_len, dict.prefix_length)
@@ -251,8 +258,8 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
 
                     push!(suggestions, si)
                 end
-            end
-        end
+           end
+       end
 
         # add edits: derive edits (deletes) from candidate (phrase)
         # and add them to candidates list. this is a recursive
@@ -277,12 +284,12 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         sort!(suggestions)
     end
 
-    if transfer_casing
-        suggestions = [SuggestItem(transfer_casing_for_similar_text(original_phrase, s.phrase), s.distance, s.count)
-                        for s in suggestions]
-    end
+    # if transfer_casing
+    #     suggestions = [SuggestItem(transfer_casing_for_similar_text(original_phrase, s.phrase), s.distance, s.count)
+    #                     for s in suggestions]
+    # end
 
-    early_exit()
+    early_exit(phrase)
 
     return suggestions
 end
