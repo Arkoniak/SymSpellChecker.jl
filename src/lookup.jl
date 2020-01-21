@@ -231,8 +231,10 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                 # max_edit_distance_2 will always equal
                 # max_edit_distance when Verbosity.ALL)
                 if distance <= max_edit_distance_2
-                    suggestion_cnt = dict.words[suggestion]
-                    si = SuggestItem(suggestion, distance, suggestion_cnt)
+                    if verbosity != VerbosityALL
+                        max_edit_distance_2 = distance
+                    end
+                    si = SuggestItem(suggestion, distance, dict.words[suggestion])
                     if !isempty(suggestions)
                         if verbosity == VerbosityCLOSEST
                             # we will calculate DamLev distance
@@ -242,16 +244,11 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                                 empty!(suggestions)
                             end
                         elseif verbosity == VerbosityTOP
-                            if distance < max_edit_distance_2 ||
-                                suggestion_cnt > suggestions[1].count
-                                suggestions[1] = si
-                            end
+                            suggestions[1] = si < suggestions[1] ? si : suggestions[1]
                             continue
                         end
                     end
-                    if verbosity != VerbosityALL
-                        max_edit_distance_2 = distance
-                    end
+
                     push!(suggestions, si)
                 end
             end
