@@ -144,7 +144,6 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
 
         if candidate in keys(dict.deletes)
             for suggestion in dict.deletes[candidate]
-                suggestion in considered_suggestions && continue
                 suggestion_len = length(suggestion)
 
                 # phrase and suggestion lengths
@@ -226,6 +225,8 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                     continue
                 end
 
+                suggestion in considered_suggestions && continue
+                
                 # delete_in_suggestion_prefix is somewhat
                 # expensive, and only pays off when
                 # verbosity is TOP or CLOSEST
