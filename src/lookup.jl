@@ -69,16 +69,18 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
         phrase = lowercase(phrase)
     end
 
-    function early_exit(phrase)
-        if include_unknown && isempty(suggestions)
-            push!(suggestions, SuggestItem(phrase, max_edit_distance + 1, 0))
+    early_exit = let phrase = phrase, suggestions = suggestions, include_unknown = include_unknown, max_edit_distance = max_edit_distance
+        function early_exit()
+            if include_unknown && isempty(suggestions)
+                push!(suggestions, SuggestItem(phrase, max_edit_distance + 1, 0))
+            end
+            suggestions
         end
-        suggestions
     end
 
     # early exit - word is too big to possibly match any words
     if phrase_len - max_edit_distance > dict.max_length
-        return early_exit(phrase)
+        return early_exit()
     end
 
     # quick look for exact match
@@ -90,7 +92,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
         # early exit - return exact match, unless caller wants all
         # matches
         if verbosity != VerbosityALL
-            return early_exit(phrase)
+            return suggestions
         end
     end
 
@@ -100,14 +102,14 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
         # early exit - return exact match, unless caller wants all
         # matches
         if verbosity != VerbosityALL
-            return early_exit(phrase)
+            return early_exit()
         end
     end
 
     # early termination, if we only want to check if word in
     # dictionary or get its frequency e.g. for word segmentation
     if max_edit_distance == 0
-        return early_exit(phrase)
+        return early_exit()
     end
 
     considered_deletes = Set{S}()
@@ -213,12 +215,13 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                     min_distance = 0
                 end
 
-                if (dict.prefix_length - max_edit_distance == candidate_len) &&
-                    (min_distance > 1 && phrase[phrase_len + 1 - min_distance:end] != suggestion[suggestion_len + 1 - min_distance:end]) ||
+                if dict.prefix_length - max_edit_distance == candidate_len &&
+                    ((min_distance > 1 &&
+                        phrase[phrase_len + 2 - min_distance:end] != suggestion[suggestion_len + 2 - min_distance:end]) ||
                     (min_distance > 0 &&
-                        phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance] &&
-                        (phrase[phrase_len - min_distance - 1] != suggestion[suggestion_len - min_distance] ||
-                            phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance - 1]
+                        phrase[phrase_len - min_distance + 1] != suggestion[suggestion_len - min_distance + 1] &&
+                        (phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance + 1] ||
+                            phrase[phrase_len - min_distance + 1] != suggestion[suggestion_len - min_distance])
                         ))
                     continue
                 end
@@ -284,12 +287,12 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
         sort!(suggestions)
     end
 
-    # if transfer_casing
-    #     suggestions = [SuggestItem(transfer_casing_for_similar_text(original_phrase, s.phrase), s.distance, s.count)
-    #                     for s in suggestions]
-    # end
+    if transfer_casing
+        suggestions = [SuggestItem(transfer_casing_for_similar_text(original_phrase, s.phrase), s.distance, s.count)
+                        for s in suggestions]
+    end
 
-    early_exit(phrase)
+    early_exit()
 
     return suggestions
 end
@@ -334,7 +337,7 @@ function transfer_casing_for_similar_text(text_w_casing, text_wo_casing)
 
     # get the operation codes describing the differences between the
     # two strings and handle them based on the per operation code rules
-    caseof(s) = isuppercase(s) ? uppercase : lowercase
+    transfer(c1, c2) = isuppercase(c1) ? uppercase(c2) : lowercase(c2)
     for (tag, i1, i2, j1, j2) in get_opcodes(lowercase(text_w_casing), text_wo_casing)
         if tag == "insert"
             # if this is the first character and so there is no
@@ -343,7 +346,7 @@ function transfer_casing_for_similar_text(text_w_casing, text_wo_casing)
             # otherwise just take the casing from the prior
             # character
             idx = i1 == 1 || text_w_casing[i1 - 1] == ' ' ? i1 : i1 - 1
-            res *= caseof(text_w_casing[idx])(text_wo_casing[j1:j2])
+            res *= transfer(text_w_casing[idx], text_wo_casing[j1:j2])
         elseif tag == "delete"
             # for deleted characters we don't need to do anything
         elseif tag == "equal"
@@ -363,15 +366,15 @@ function transfer_casing_for_similar_text(text_w_casing, text_wo_casing)
                 # transfer the casing character-by-character and using
                 # the last casing to continue if we run out of the
                 # sequence
-                last_case = lowercase
+                last_case = 'a'
                 for (w, wo) in zip(w_casing, wo_casing)
-                    last_case = caseof(w)
-                    res *= last_case(wo)
+                    last_case = w
+                    res *= transfer(w, wo)
                 end
                 # once we ran out of 'w', we will carry over
                 # the last casing to any additional 'wo'
                 # characters
-                res *= last_case(wo_casing[length(w_casing) + 1:end])
+                res *= transfer(last_case, wo_casing[length(w_casing) + 1:end])
             end
         end
     end
