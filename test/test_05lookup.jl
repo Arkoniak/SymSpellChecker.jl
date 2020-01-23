@@ -5,13 +5,6 @@ include("preamble.jl")
 using SymSpellChecker: SuggestItem, delete_in_suggestion_prefix, Verbosity,
     VerbosityALL, VerbosityTOP, VerbosityCLOSEST
 
-@testset "utility functions" begin
-    @test delete_in_suggestion_prefix("bc", "bc", 7)
-    @test delete_in_suggestion_prefix("xyz", "axbyczkkkkkkkkkk", 7)
-    @test delete_in_suggestion_prefix("xyzmmmmm", "xyzkkkkkkkkkk", 3)
-    @test !delete_in_suggestion_prefix("xyz", "axbykkkkkkkkkk", 7)
-end
-
 @testset "basic lookup" begin
     d = SymSpell()
 
@@ -185,4 +178,13 @@ end
     result = lookup(d, "callvdx", verbosity = VerbosityTOP)
     @test length(result) == 0
 end
+
+@testset "should correctly search utf keywords" begin
+    d = SymSpell(max_dictionary_edit_distance = 1)
+
+    push!(d, "привет", 10)
+    @test length(d["прифет"]) > 0
+    @test length(d["пфетик"]) == 0
+end
+
 end # module

@@ -127,7 +127,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
 
     # add original prefix
     phrase_prefix_len = min(phrase_len, dict.prefix_length)
-    push!(candidates, phrase[1:phrase_prefix_len])
+    push!(candidates, phrase[1:conv_idx(phrase, phrase_prefix_len)])
 
     while !isempty(candidates)
         candidate = popfirst!(candidates)
@@ -277,13 +277,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
             if verbosity != VerbosityALL && len_diff >= max_edit_distance_2
                 continue
             end
-            for i in 1:candidate_len
-                delete = candidate[1:i - 1] * candidate[i+1:end]
-                if !(delete in considered_deletes)
-                    push!(considered_deletes, delete)
-                    push!(candidates, delete)
-                end
-            end
+            add_edits!(considered_deletes, candidates, candidate, candidate_len)
         end
     end
 
@@ -301,6 +295,22 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
     return suggestions
 end
 
+function add_edits!(considered_deletes, candidates, candidate, candidate_len)
+    idx1 = 0
+    idx2 = nextind(candidate, idx1)
+    idx3 = idx2
+    for i in eachindex(0:candidate_len-1)
+        idx3 = nextind(candidate, idx3)
+        delete = candidate[1:idx1] * candidate[idx3:end]
+        idx1 = idx2
+        idx2 = idx3
+        if !(delete in considered_deletes)
+            push!(considered_deletes, delete)
+            push!(candidates, delete)
+        end
+    end
+end
+
 """
     delete_in_suggestion_prefix(dict, delete, delete_len, suggestion, suggestion_len)
 
@@ -316,11 +326,15 @@ function delete_in_suggestion_prefix(delete, suggestion, prefix_len)
     delete_len = min(prefix_len, length(delete))
 
     j = 1
-    for del_char in delete[1:delete_len]
-        while j <= suggestion_len && del_char != suggestion[j]
-            j += 1
+    j_cnt = 0
+    i = 1
+    for _ in 1:delete_len
+        while j_cnt <= suggestion_len && delete[i] != suggestion[j]
+            j = nextind(suggestion, j)
+            j_cnt += 1
         end
-        j > suggestion_len && return false
+        j_cnt > suggestion_len && return false
+        i = nextind(delete, i)
     end
 
     return true
