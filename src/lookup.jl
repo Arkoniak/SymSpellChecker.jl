@@ -1,14 +1,14 @@
 @enum Verbosity VerbosityTOP VerbosityCLOSEST VerbosityALL
 
 struct SuggestItem{T <: AbstractString}
-    phrase::T
+    term::T
     distance::Int
     count::Int
 end
 
 Base.:isless(si1::SuggestItem, si2::SuggestItem) = (si1.distance < si2.distance) ||
     ((si1.distance == si2.distance) && (si1.count > si2.count)) ||
-    ((si1.distance == si2.distance) && (si1.count == si2.count) && (si1.phrase < si2.phrase))
+    ((si1.distance == si2.distance) && (si1.count == si2.count) && (si1.term < si2.term))
 
 """
     lookup(dict, phrase, max_edit_distance, include_unknown, ignore_token, transfer_casing)
@@ -51,22 +51,34 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         transfer_casing = false, verbosity = VerbosityTOP,
         max_edit_distance = dict.max_dictionary_edit_distance,
         compare_algorithm = DamerauLevenshtein())
+
+        lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, verbosity, max_edit_distance, compare_algorithm)
+end
+
+Base.:getindex(dict, phrase) = lookup(dict, phrase)
+
+function lookup(dict, phrase::S, include_unknown, ignore_token,
+                transfer_casing, verbosity,
+                max_edit_distance,
+                compare_algorithm) where S
     if max_edit_distance > dict.max_dictionary_edit_distance
         throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_dictionary_edit_distance)"))
     end
 
-    suggestions = SuggestItem[]
+    suggestions = SuggestItem{S}[]
     phrase_len = length(phrase)
 
     if transfer_casing
         phrase = lowercase(phrase)
     end
 
-    function early_exit()
-        if include_unknown && isempty(suggestions)
-            push!(suggestions, SuggestItem(phrase, max_edit_distance + 1, 0))
+    early_exit = let phrase = phrase, suggestions = suggestions, include_unknown = include_unknown, max_edit_distance = max_edit_distance
+        function early_exit()
+            if include_unknown && isempty(suggestions)
+                push!(suggestions, SuggestItem(phrase, max_edit_distance + 1, 0))
+            end
+            suggestions
         end
-        suggestions
     end
 
     # early exit - word is too big to possibly match any words
@@ -83,7 +95,7 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         # early exit - return exact match, unless caller wants all
         # matches
         if verbosity != VerbosityALL
-            return early_exit()
+            return suggestions
         end
     end
 
@@ -103,15 +115,15 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         return early_exit()
     end
 
-    considered_deletes = Set()
-    considered_suggestions = Set()
+    considered_deletes = Set{S}()
+    considered_suggestions = Set{S}()
 
     # we considered the phrase already in the
     # 'phrase in keys(dict.words)' above
     push!(considered_suggestions, phrase)
 
     max_edit_distance_2 = max_edit_distance
-    candidates = []
+    candidates = S[]
 
     # add original prefix
     phrase_prefix_len = min(phrase_len, dict.prefix_length)
@@ -135,7 +147,6 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
 
         if candidate in keys(dict.deletes)
             for suggestion in dict.deletes[candidate]
-                suggestion in considered_suggestions && continue
                 suggestion_len = length(suggestion)
 
                 # phrase and suggestion lengths
@@ -206,15 +217,18 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
                     min_distance = 0
                 end
 
-                if (dict.prefix_length - max_edit_distance == candidate_len) &&
-                    (min_distance > 1 && phrase[phrase_len + 1 - min_distance:end] != suggestion[suggestion_len + 1 - min_distance:end]) ||
+                if dict.prefix_length - max_edit_distance == candidate_len &&
+                    ((min_distance > 1 &&
+                        phrase[phrase_len + 2 - min_distance:end] != suggestion[suggestion_len + 2 - min_distance:end]) ||
                     (min_distance > 0 &&
-                        phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance] &&
-                        (phrase[phrase_len - min_distance - 1] != suggestion[suggestion_len - min_distance] ||
-                            phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance - 1]
+                        phrase[phrase_len - min_distance + 1] != suggestion[suggestion_len - min_distance + 1] &&
+                        (phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance + 1] ||
+                            phrase[phrase_len - min_distance + 1] != suggestion[suggestion_len - min_distance])
                         ))
                     continue
                 end
+
+                suggestion in considered_suggestions && continue
 
                 # delete_in_suggestion_prefix is somewhat
                 # expensive, and only pays off when
@@ -251,8 +265,8 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
 
                     push!(suggestions, si)
                 end
-            end
-        end
+           end
+       end
 
         # add edits: derive edits (deletes) from candidate (phrase)
         # and add them to candidates list. this is a recursive
@@ -327,7 +341,7 @@ function transfer_casing_for_similar_text(text_w_casing, text_wo_casing)
 
     # get the operation codes describing the differences between the
     # two strings and handle them based on the per operation code rules
-    caseof(s) = isuppercase(s) ? uppercase : lowercase
+    transfer(c1, c2) = isuppercase(c1) ? uppercase(c2) : lowercase(c2)
     for (tag, i1, i2, j1, j2) in get_opcodes(lowercase(text_w_casing), text_wo_casing)
         if tag == "insert"
             # if this is the first character and so there is no
@@ -336,7 +350,7 @@ function transfer_casing_for_similar_text(text_w_casing, text_wo_casing)
             # otherwise just take the casing from the prior
             # character
             idx = i1 == 1 || text_w_casing[i1 - 1] == ' ' ? i1 : i1 - 1
-            res *= caseof(text_w_casing[idx])(text_wo_casing[j1:j2])
+            res *= transfer(text_w_casing[idx], text_wo_casing[j1:j2])
         elseif tag == "delete"
             # for deleted characters we don't need to do anything
         elseif tag == "equal"
@@ -356,15 +370,15 @@ function transfer_casing_for_similar_text(text_w_casing, text_wo_casing)
                 # transfer the casing character-by-character and using
                 # the last casing to continue if we run out of the
                 # sequence
-                last_case = lowercase
+                last_case = 'a'
                 for (w, wo) in zip(w_casing, wo_casing)
-                    last_case = caseof(w)
-                    res *= last_case(wo)
+                    last_case = w
+                    res *= transfer(w, wo)
                 end
                 # once we ran out of 'w', we will carry over
                 # the last casing to any additional 'wo'
                 # characters
-                res *= last_case(wo_casing[length(w_casing) + 1:end])
+                res *= transfer(last_case, wo_casing[length(w_casing) + 1:end])
             end
         end
     end

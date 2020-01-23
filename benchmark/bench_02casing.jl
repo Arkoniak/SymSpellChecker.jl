@@ -1,6 +1,6 @@
 module BenchCasing
 using BenchmarkTools
-using SymSpell: get_opcodes, transfer_casing_for_similar_text
+using SymSpellChecker: get_opcodes, transfer_casing_for_similar_text
 
 suite = BenchmarkGroup()
 s1 = "qabxcd"
@@ -12,4 +12,5 @@ text_wo_casing = "how is the weather in new york?"
 suite["transfer_casing"] = @benchmarkable transfer_casing_for_similar_text($text_w_casing, $text_wo_casing)
 
 end
+
 BenchCasing.suite
