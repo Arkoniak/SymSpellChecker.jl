@@ -1,7 +1,7 @@
 module BenchMixLookup
 using BenchmarkTools
 using SymSpellChecker
-using SymSpell: VerbosityALL, VerbosityCLOSEST
+using SymSpellChecker: VerbosityALL, VerbosityCLOSEST
 
 ASSETS_PATH = joinpath(@__DIR__, "..", "assets")
 
