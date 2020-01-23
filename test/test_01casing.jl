@@ -1,5 +1,5 @@
 module TestCasing
-using SymSpell: get_opcodes, transfer_casing_for_similar_text, transfer_casing_for_matching_text
+using SymSpellChecker: get_opcodes, transfer_casing_for_similar_text, transfer_casing_for_matching_text
 
 include("preamble.jl")
 

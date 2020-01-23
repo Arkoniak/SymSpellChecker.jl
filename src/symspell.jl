@@ -1,4 +1,4 @@
-mutable struct Dictionary{S <: AbstractString, T <: Integer}
+mutable struct SymSpell{S <: AbstractString, T <: Integer}
     words::Dict{S, T}
     below_threshold_words::Dict{S, T}
     deletes::Dict{S, Vector{S}}
@@ -9,9 +9,27 @@ mutable struct Dictionary{S <: AbstractString, T <: Integer}
     max_length::Int
 end
 
-Dictionary(; max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1) =
-    Dictionary{String, Int}(Dict(), Dict(), Dict(),
+SymSpell(; max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1) =
+    SymSpell{String, Int}(Dict(), Dict(), Dict(),
         max_dictionary_edit_distance, prefix_length, count_threshold, 0)
+
+function SymSpell(path; sep = " ", max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1)
+    d = SymSpell(max_dictionary_edit_distance = max_dictionary_edit_distance,
+                    prefix_length = prefix_length, count_threshold = count_threshold)
+    update!(d, path, sep = sep)
+end
+
+# TODO: add support for DataFrames and CSV
+function update!(dict::SymSpell{S, T}, path; sep = " ") where {S, T}
+    for line in eachline(path)
+        line_parts = strip.(split(line, sep))
+        if length(line_parts) >= 2
+            push!(dict, line_parts[1], parse(T, line_parts[2]))
+        end
+    end
+    dict
+end
+
 
 """
     edits(dict, word, edit_distance, delete_words)
@@ -62,7 +80,7 @@ function edits_prefix(key::S, max_dictionary_edit_distance, prefix_length) where
     edits!(hash_set, key, 0, max_dictionary_edit_distance)
 end
 
-function Base.:push!(dict::Dictionary{S, T}, key, cnt) where {T <: Integer, S <: AbstractString}
+function Base.:push!(dict::SymSpell{S, T}, key, cnt) where {T <: Integer, S <: AbstractString}
     if cnt < 0
         if dict.count_threshold > 0 return false end
         cnt = 0
@@ -114,21 +132,4 @@ function Base.:push!(dict::Dictionary{S, T}, key, cnt) where {T <: Integer, S <:
     end
 
     return true
-end
-
-function Dictionary(path; sep = " ", max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1)
-    d = Dictionary(max_dictionary_edit_distance = max_dictionary_edit_distance,
-                    prefix_length = prefix_length, count_threshold = count_threshold)
-    update!(d, path, sep = sep)
-end
-
-# TODO: add support for DataFrames and CSV
-function update!(dict::Dictionary{S, T}, path; sep = " ") where {S, T}
-    for line in eachline(path)
-        line_parts = strip.(split(line, sep))
-        if length(line_parts) >= 2
-            push!(dict, line_parts[1], parse(T, line_parts[2]))
-        end
-    end
-    dict
 end

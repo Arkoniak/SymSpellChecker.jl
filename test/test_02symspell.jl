@@ -1,8 +1,8 @@
-module TestDictionary
+module TestSymSpell
 include("preamble.jl")
 
 @testset "dictionary creation" begin
-    d = Dictionary()
+    d = SymSpell()
 
     @test push!(d, "a", 2)
     @test d.words == Dict{String, Int}("a" => 2)
@@ -12,7 +12,7 @@ include("preamble.jl")
     push!(d, "bc", 2)
     @test d.max_length == 2
 
-    d = Dictionary(count_threshold = 2)
+    d = SymSpell(count_threshold = 2)
     push!(d, "a", 100)
     push!(d, "bc", 100)
     push!(d, "c", 1)
@@ -23,7 +23,7 @@ include("preamble.jl")
     @test length(d.words) == 3
     @test length(d.below_threshold_words) == 0
 
-    d = Dictionary(max_dictionary_edit_distance = 1)
+    d = SymSpell(max_dictionary_edit_distance = 1)
     push!(d, "abc", 100)
     @test d.deletes == Dict{String, Vector{String}}("bc" => ["abc"], "ac" => ["abc"], "ab" => ["abc"], "abc" => ["abc"])
 
@@ -32,7 +32,7 @@ include("preamble.jl")
 end
 
 @testset "dictionary load" begin
-    d = Dictionary(count_threshold = 2)
+    d = SymSpell(count_threshold = 2)
     update!(d, joinpath(@__DIR__, "..", "assets", "test_dict.txt"))
 
     @test d.words["key"] == 10

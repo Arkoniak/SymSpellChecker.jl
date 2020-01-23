@@ -1,5 +1,5 @@
-name = "SymSpell"
-uuid = "d4f13b8d-38bd-4a1b-8388-9f74cc6ed44b"
+name = "SymSpellChecker"
+uuid = "bb1b64e9-0ccc-445c-80cb-5313b9f7dfe1"
 authors = ["Andrey Oskin"]
 version = "0.1.0"
 

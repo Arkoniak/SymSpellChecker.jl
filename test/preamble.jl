@@ -1,2 +1,2 @@
 using Test
-using SymSpell
+using SymSpellChecker

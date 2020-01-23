@@ -1,4 +1,4 @@
-module TestSymSpell
+module TestSymSpellChecker
 using Test
 
 

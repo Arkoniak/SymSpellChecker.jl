@@ -1,14 +1,14 @@
 @enum Verbosity VerbosityTOP VerbosityCLOSEST VerbosityALL
 
 struct SuggestItem{T <: AbstractString}
-    phrase::T
+    term::T
     distance::Int
     count::Int
 end
 
 Base.:isless(si1::SuggestItem, si2::SuggestItem) = (si1.distance < si2.distance) ||
     ((si1.distance == si2.distance) && (si1.count > si2.count)) ||
-    ((si1.distance == si2.distance) && (si1.count == si2.count) && (si1.phrase < si2.phrase))
+    ((si1.distance == si2.distance) && (si1.count == si2.count) && (si1.term < si2.term))
 
 """
     lookup(dict, phrase, max_edit_distance, include_unknown, ignore_token, transfer_casing)
@@ -54,6 +54,9 @@ function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
 
         lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, verbosity, max_edit_distance, compare_algorithm)
 end
+
+Base.:getindex(dict, phrase) = lookup(dict, phrase)
+
 function lookup(dict, phrase::S, include_unknown, ignore_token,
                 transfer_casing, verbosity,
                 max_edit_distance,
@@ -226,7 +229,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                 end
 
                 suggestion in considered_suggestions && continue
-                
+
                 # delete_in_suggestion_prefix is somewhat
                 # expensive, and only pays off when
                 # verbosity is TOP or CLOSEST
