@@ -185,4 +185,13 @@ end
     result = lookup(d, "callvdx", verbosity = VerbosityTOP)
     @test length(result) == 0
 end
+
+@testset "should correctly search utf keywords" begin
+    d = SymSpell(max_dictionary_edit_distance = 1)
+
+    push!(d, "привет", 10)
+    @test length(d["прифет"]) > 0
+    @test length(d["пфетик"]) == 0
+end
+
 end # module

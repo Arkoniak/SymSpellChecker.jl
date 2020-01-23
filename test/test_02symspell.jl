@@ -31,6 +31,12 @@ include("preamble.jl")
     @test d.deletes["ab"] == ["abc", "abd"]
 end
 
+@testset "utf-8 dictionary" begin
+    d = SymSpell()
+
+    @test push!(d, "привет", 10)
+end
+
 @testset "dictionary load" begin
     d = SymSpell(count_threshold = 2)
     update!(d, joinpath(@__DIR__, "..", "assets", "test_dict.txt"))
