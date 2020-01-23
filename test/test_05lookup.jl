@@ -5,13 +5,6 @@ include("preamble.jl")
 using SymSpellChecker: SuggestItem, delete_in_suggestion_prefix, Verbosity,
     VerbosityALL, VerbosityTOP, VerbosityCLOSEST
 
-@testset "utility functions" begin
-    @test delete_in_suggestion_prefix("bc", "bc", 7)
-    @test delete_in_suggestion_prefix("xyz", "axbyczkkkkkkkkkk", 7)
-    @test delete_in_suggestion_prefix("xyzmmmmm", "xyzkkkkkkkkkk", 3)
-    @test !delete_in_suggestion_prefix("xyz", "axbykkkkkkkkkk", 7)
-end
-
 @testset "basic lookup" begin
     d = SymSpell()
 

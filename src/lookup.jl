@@ -277,19 +277,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
             if verbosity != VerbosityALL && len_diff >= max_edit_distance_2
                 continue
             end
-            idx1 = 0
-            idx2 = nextind(candidate, idx1)
-            idx3 = nextind(candidate, idx2)
-            for i in 0:candidate_len-2
-                delete = candidate[1:idx1] * candidate[idx3:end]
-                idx1 = idx2
-                idx2 = idx3
-                idx3 = nextind(candidate, idx3)
-                if !(delete in considered_deletes)
-                    push!(considered_deletes, delete)
-                    push!(candidates, delete)
-                end
-            end
+            add_edits!(considered_deletes, candidates, candidate, candidate_len)
         end
     end
 
@@ -305,6 +293,22 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
     early_exit()
 
     return suggestions
+end
+
+function add_edits!(considered_deletes, candidates, candidate, candidate_len)
+    idx1 = 0
+    idx2 = nextind(candidate, idx1)
+    idx3 = idx2
+    for i in eachindex(0:candidate_len-1)
+        idx3 = nextind(candidate, idx3)
+        delete = candidate[1:idx1] * candidate[idx3:end]
+        idx1 = idx2
+        idx2 = idx3
+        if !(delete in considered_deletes)
+            push!(considered_deletes, delete)
+            push!(candidates, delete)
+        end
+    end
 end
 
 """
@@ -325,11 +329,11 @@ function delete_in_suggestion_prefix(delete, suggestion, prefix_len)
     j_cnt = 0
     i = 1
     for _ in 1:delete_len
-        while j <= suggestion_len && delete[i] != suggestion[j]
+        while j_cnt <= suggestion_len && delete[i] != suggestion[j]
             j = nextind(suggestion, j)
             j_cnt += 1
         end
-        j > suggestion_len && return false
+        j_cnt > suggestion_len && return false
         i = nextind(delete, i)
     end
 
