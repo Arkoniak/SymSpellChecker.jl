@@ -127,7 +127,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
 
     # add original prefix
     phrase_prefix_len = min(phrase_len, dict.prefix_length)
-    push!(candidates, phrase[1:conv_idx(phrase, phrase_prefix_len)])
+    push!(candidates, phrase[1:nextind(phrase, 0, phrase_prefix_len)])
 
     while !isempty(candidates)
         candidate = popfirst!(candidates)
@@ -238,16 +238,13 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                     continue
                 end
                 push!(considered_suggestions, suggestion)
-                distance = evaluate(compare_algorithm, phrase, suggestion)
+                distance = evaluate(compare_algorithm, phrase, suggestion, max_dist = max_edit_distance_2)
 
                 # do not process higher distances than those
                 # already found, if verbosity<ALL (note:
                 # max_edit_distance_2 will always equal
                 # max_edit_distance when Verbosity.ALL)
                 if distance <= max_edit_distance_2
-                    if verbosity != VerbosityALL
-                        max_edit_distance_2 = distance
-                    end
                     si = SuggestItem(suggestion, distance, dict.words[suggestion])
                     if !isempty(suggestions)
                         if verbosity == VerbosityCLOSEST
@@ -259,10 +256,14 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                             end
                         elseif verbosity == VerbosityTOP
                             suggestions[1] = si < suggestions[1] ? si : suggestions[1]
+                            max_edit_distance_2 = distance
                             continue
                         end
                     end
 
+                    if verbosity != VerbosityALL
+                        max_edit_distance_2 = distance
+                    end
                     push!(suggestions, si)
                 end
            end
