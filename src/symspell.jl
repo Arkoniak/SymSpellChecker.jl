@@ -59,14 +59,6 @@ function edits!(delete_words, word, edit_distance, max_dictionary_edit_distance)
     return delete_words
 end
 
-@inline function conv_idx(word, i)
-    k = 0
-    for j in 1:i
-        k = nextind(word, k)
-    end
-    k
-end
-
 function edits_prefix(key::S, max_dictionary_edit_distance, prefix_length) where S
     hash_set = Set{S}()
 
@@ -74,7 +66,7 @@ function edits_prefix(key::S, max_dictionary_edit_distance, prefix_length) where
         push!(hash_set, "")
     end
     if length(key) > prefix_length
-        key = key[1:conv_idx(key, prefix_length)]
+        key = key[1:nextind(key, 0, prefix_length)]
     end
     push!(hash_set, key)
     edits!(hash_set, key, 0, max_dictionary_edit_distance)
