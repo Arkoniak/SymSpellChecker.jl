@@ -219,11 +219,15 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
 
                 if dict.prefix_length - max_edit_distance == candidate_len &&
                     ((min_distance > 1 &&
-                        phrase[phrase_len + 2 - min_distance:end] != suggestion[suggestion_len + 2 - min_distance:end]) ||
+                        phrase[nextind(phrase, 0, phrase_len + 2 - min_distance):end] !=
+                            suggestion[nextind(suggestion, 0, suggestion_len + 2 - min_distance):end]) ||
                     (min_distance > 0 &&
-                        phrase[phrase_len - min_distance + 1] != suggestion[suggestion_len - min_distance + 1] &&
-                        (phrase[phrase_len - min_distance] != suggestion[suggestion_len - min_distance + 1] ||
-                            phrase[phrase_len - min_distance + 1] != suggestion[suggestion_len - min_distance])
+                        phrase[nextind(phrase, 0, phrase_len - min_distance + 1)] !=
+                            suggestion[nextind(suggestion, 0, suggestion_len - min_distance + 1)] &&
+                        (phrase[nextind(phrase, 0, phrase_len - min_distance)] !=
+                            suggestion[nextind(suggestion, 0, suggestion_len - min_distance + 1)] ||
+                            phrase[nextind(phrase, 0, phrase_len - min_distance + 1)] !=
+                                suggestion[nextind(suggestion, 0, suggestion_len - min_distance)])
                         ))
                     continue
                 end

@@ -1,19 +1,24 @@
 using BenchmarkTools
-using SymSpell
+using SymSpellChecker
+using SymSpellChecker: VerbosityALL, VerbosityTOP, VerbosityCLOSEST
 using Statistics
-using ProfileView
+using CSV
+using DataFrames
 
+ASSETS_PATH = joinpath(@__DIR__, "..", "..", "assets")
 function load_noisy()
-    map(readlines(joinpath(@__DIR__, "noisy_query_en_1000.txt"))) do x
+    map(readlines(joinpath(ASSETS_PATH, "noisy_query_en_1000.txt"))) do x
         String(split(x)[1])
     end
 end
 
 dicts = [
-    joinpath(@__DIR__, "frequency_dictionary_en_30_000.txt"),
-    joinpath(@__DIR__, "..", "..", "assets", "frequency_dictionary_en_82_765.txt"),
-    joinpath(@__DIR__, "frequency_dictionary_en_500_000.txt"),
+    joinpath(ASSETS_PATH, "frequency_dictionary_en_30_000.txt"),
+    joinpath(ASSETS_PATH, "frequency_dictionary_en_82_765.txt"),
+    joinpath(ASSETS_PATH, "frequency_dictionary_en_500_000.txt"),
 ]
+
+dict_names = ["30k", "82k", "500k"]
 
 query1k = load_noisy()
 
@@ -21,64 +26,38 @@ function mix(d, data, verbosity)
     sum(length(lookup(d, word, verbosity = verbosity)) for word in data)
 end
 
-max_edit = 1
-prefix_length = 5
+df = DataFrame(max_edit = Int[], prefix_length = Int[], dict_name = String[], verbosity = String[], type = String[],
+    res = Int[], min_val = Float64[], med_val = Float64[], avg_val = Float64[])
 
-d = Dictionary(dicts[1], max_dictionary_edit_distance = max_edit, prefix_length = prefix_length)
+for max_edit in 1:3
+    for prefix_length in 5:7
+        for (dict_path, dict_name) in zip(dicts, dict_names)
+            d = SymSpell(dict_path, max_dictionary_edit_distance = max_edit, prefix_length = prefix_length)
+            for verbosity in [VerbosityTOP, VerbosityCLOSEST, VerbosityALL]
+                verb_name = verbosity == VerbosityTOP ? "top" : verbosity == VerbosityCLOSEST ? "closest" : "all"
+                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: exact")
+                b = @benchmark lookup($d, $"different", verbosity = $verbosity)
+                res = length(lookup(d, "different", verbosity = verbosity))
 
-lookup(d, "different", verbosity = SymSpell.VerbosityTOP)
+                push!(df, (max_edit, prefix_length, dict_name, verb_name, "exact", res,
+                    minimum(b.times/1000_000), median(b.times/1000_000), mean(b.times/1000_000)))
 
-lookup(d, "hockie", verbosity = SymSpell.VerbosityTOP)
+                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: non-exact")
+                b = @benchmark lookup($d, $"hockie", verbosity = $verbosity)
+                res = length(lookup(d, "hockie", verbosity = verbosity))
 
-bres = @benchmark lookup($d, "different", verbosity = $SymSpell.VerbosityTOP)
-0.0006489107142857143
-median(bres.times)/1000/1000
+                push!(df, (max_edit, prefix_length, dict_name, verb_name, "non-exact", res,
+                    minimum(b.times/1000_000), median(b.times/1000_000), mean(b.times/1000_000)))
 
-bres = @benchmark lookup($d, "hockie", verbosity = $SymSpell.VerbosityTOP)
-0.0111
-median(bres.times)/1000/1000
+                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: mix")
+                b = @benchmark mix($d, $query1k, $verbosity)
+                res = mix(d, query1k, verbosity)
 
-bres = @benchmark mix($d, $query1k, $SymSpell.VerbosityTOP)
-0.139868706
-median(bres.times)/1000/1000/1000
-sum(length(lookup(d, word, verbosity = SymSpell.VerbosityTOP)) for word in query1k)
-
-Base.summarysize(d)/1024/1024
-
-word = "années"
-
-word[1:1]*word[3:3]
-collect(word)
-
-chr2ind(word, 1)
-word[nextind(word, 2):nextind(word, 2)]
-
-word = "что"
-let i = 0
-    while i < lastindex(word)
-        println(word[1:i] * word[nextind(word, nextind(word, i)):end])
-        i = nextind(word, i)
+                push!(df, (max_edit, prefix_length, dict_name, verb_name, "mix", res,
+                    minimum(b.times/1000_000_000), median(b.times/1000_000_000), mean(b.times/1000_000_000)))
+            end
+        end
     end
 end
 
-function conv_idx(word, i)
-    k = 0
-    for j in 1:i
-        k = nextind(word, k)
-    end
-    k
-end
-
-conv_idx(word, 3)
-nextind(word)
-word[3]
-nextind(word, 1)
-word[4:end]
-lastindex(word)
-word[nextind(word, 1)]
-
-
-##################
-# @profview mix(d, query1k, SymSpell.VerbosityALL)
-
-@code_warntype lookup(d, "hockie")
+CSV.write(joinpath(@__DIR__, "bench.csv"), df)
