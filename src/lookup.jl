@@ -155,12 +155,7 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
 
         if candidate in keys(dict.deletes)
             for suggestion_id in dict.deletes[candidate]
-                suggestion_id in considered_suggestions && continue
-                tmp = dict.words[suggestion_id]
-                suggestion = tmp[1]
-                suggestion_cnt = tmp[2]
-                # suggestion, suggestion_cnt = dict.words[suggestion_id]
-                suggestion_len = length(suggestion)
+                @inbounds suggestion, suggestion_cnt, suggestion_len = dict.words[suggestion_id]
 
                 # phrase and suggestion lengths
                 # diff > allowed/current best distance
@@ -224,18 +219,20 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                 # handles the shortcircuit of min_distance
                 # assignment when first boolean expression
                 # evaluates to false
+                suggestion_id in considered_suggestions && continue
+
                 if dict.prefix_length - max_edit_distance == candidate_len
                     min_distance = min(phrase_len, suggestion_len) - dict.prefix_length
 
-                    min_distance > 1 && phrase[nextind(phrase, 0, phrase_len + 2 - min_distance):end] !=
+                    @inbounds min_distance > 1 && phrase[nextind(phrase, 0, phrase_len + 2 - min_distance):end] !=
                         suggestion[nextind(suggestion, 0, suggestion_len + 2 - min_distance):end] && continue
                     if min_distance > 0
                         p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
                         s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
-                        if phrase[p1] != suggestion[s1]
+                        @inbounds if phrase[p1] != suggestion[s1]
                             p2 = prevind(phrase, p1)
                             s2 = prevind(suggestion, s1)
-                            (phrase[p2] != suggestion[s1] || phrase[p1] != suggestion[s2]) && continue
+                            @inbounds (phrase[p2] != suggestion[s1] || phrase[p1] != suggestion[s2]) && continue
                         end
                     end
                 end

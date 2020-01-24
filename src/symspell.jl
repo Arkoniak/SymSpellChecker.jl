@@ -1,5 +1,5 @@
 mutable struct SymSpell{S <: AbstractString, T <: Integer, K <: Unsigned}
-    words::Vector{Tuple{S, T}}
+    words::Vector{Tuple{S, T, UInt8}}
     below_threshold_words::Dict{S, T}
     deletes::Dict{S, Vector{K}}
 
@@ -98,7 +98,7 @@ function Base.:push!(dict::SymSpell{S, T, K}, key, cnt) where {S, T, K}
         # just update count if it's an already added above
         # threshold word
         cnt_prev = last(dict.words[first(dict.deletes[key])])
-        dict.words[first(dict.deletes[key])] = (key, typemax(T) - cnt_prev > cnt ? cnt_prev + cnt : typemax(T))
+        dict.words[first(dict.deletes[key])] = (key, typemax(T) - cnt_prev > cnt ? cnt_prev + cnt : typemax(T), length(key))
         return false
     elseif cnt < dict.count_threshold
         # new below threshold word
@@ -107,7 +107,7 @@ function Base.:push!(dict::SymSpell{S, T, K}, key, cnt) where {S, T, K}
     end
 
     # what we have at this point is a new, above threshold word
-    push!(dict.words, (key, cnt))
+    push!(dict.words, (key, cnt, length(key)))
     idx = length(dict.words)
 
     # edits/suggestions are created only once, no matter how often
