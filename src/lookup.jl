@@ -57,10 +57,10 @@ end
 
 Base.:getindex(dict, phrase) = lookup(dict, phrase)
 
-function lookup(dict, phrase::S, include_unknown, ignore_token,
+function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_token,
                 transfer_casing, verbosity,
                 max_edit_distance,
-                compare_algorithm) where S
+                compare_algorithm) where {S, S2, T, K}
     if max_edit_distance > dict.max_dictionary_edit_distance
         throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_dictionary_edit_distance)"))
     end
@@ -88,14 +88,20 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
 
     # quick look for exact match
     suggestion_cnt = 0
-    if phrase in keys(dict.words)
-        suggestion_cnt = dict.words[phrase]
-        push!(suggestions, SuggestItem(phrase, 0, suggestion_cnt))
-
-        # early exit - return exact match, unless caller wants all
-        # matches
-        if verbosity != VerbosityALL
-            return suggestions
+    idx = K(0)
+    if phrase in keys(dict.deletes)
+        idx = first(dict.deletes[phrase])
+        may_be_suggestion, suggestion_cnt = dict.words[idx]
+        # if may_be_suggestion != phrase, than it's false alarm
+        if may_be_suggestion == phrase
+            push!(suggestions, SuggestItem(phrase, 0, suggestion_cnt))
+            # early exit - return exact match, unless caller wants all
+            # matches
+            if verbosity != VerbosityALL
+                return suggestions
+            end
+        else
+            idx = K(0)
         end
     end
 
@@ -116,11 +122,13 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
     end
 
     considered_deletes = Set{S}()
-    considered_suggestions = Set{S}()
+    considered_suggestions = Set{K}()
 
     # we considered the phrase already in the
     # 'phrase in keys(dict.words)' above
-    push!(considered_suggestions, phrase)
+    if idx > 0
+        push!(considered_suggestions, idx)
+    end
 
     max_edit_distance_2 = max_edit_distance
     candidates = S[]
@@ -146,7 +154,8 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
         end
 
         if candidate in keys(dict.deletes)
-            for suggestion in dict.deletes[candidate]
+            for suggestion_id in dict.deletes[candidate]
+                suggestion, suggestion_cnt = dict.words[suggestion_id]
                 suggestion_len = length(suggestion)
 
                 # phrase and suggestion lengths
@@ -232,7 +241,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                     continue
                 end
 
-                suggestion in considered_suggestions && continue
+                suggestion_id in considered_suggestions && continue
 
                 # delete_in_suggestion_prefix is somewhat
                 # expensive, and only pays off when
@@ -241,7 +250,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                     !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length)
                     continue
                 end
-                push!(considered_suggestions, suggestion)
+                push!(considered_suggestions, suggestion_id)
                 distance = evaluate(compare_algorithm, phrase, suggestion, max_dist = max_edit_distance_2)
 
                 # do not process higher distances than those
@@ -249,7 +258,7 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                 # max_edit_distance_2 will always equal
                 # max_edit_distance when Verbosity.ALL)
                 if distance <= max_edit_distance_2
-                    si = SuggestItem(suggestion, distance, dict.words[suggestion])
+                    si = SuggestItem(suggestion, distance, suggestion_cnt)
                     if !isempty(suggestions)
                         if verbosity == VerbosityCLOSEST
                             # we will calculate DamLev distance

@@ -5,9 +5,9 @@ include("preamble.jl")
     d = SymSpell()
 
     @test push!(d, "a", 2)
-    @test d.words == Dict{String, Int}("a" => 2)
+    @test d.words == [("a", 2)]
     @test isempty(d.below_threshold_words)
-    @test d.deletes == Dict{String, Vector{String}}("" => ["a"], "a" => ["a"])
+    @test d.deletes == Dict{String, Vector{UInt32}}("" => [1], "a" => [1])
 
     push!(d, "bc", 2)
     @test d.max_length == 2
@@ -25,10 +25,15 @@ include("preamble.jl")
 
     d = SymSpell(max_dictionary_edit_distance = 1)
     push!(d, "abc", 100)
-    @test d.deletes == Dict{String, Vector{String}}("bc" => ["abc"], "ac" => ["abc"], "ab" => ["abc"], "abc" => ["abc"])
+    @test d.deletes == Dict{String, Vector{UInt32}}("bc" => [1], "ac" => [1], "ab" => [1], "abc" => [1])
 
     push!(d, "abd", 100)
-    @test d.deletes["ab"] == ["abc", "abd"]
+    @test d.deletes["ab"] == UInt32[1, 2]
+
+    d = SymSpell(max_dictionary_edit_distance = 1)
+    push!(d, "world", 10)
+    push!(d, "word", 5)
+    @test d.words[first(d.deletes["word"])] == ("word", 5)
 end
 
 @testset "utf-8 dictionary" begin
@@ -41,7 +46,7 @@ end
     d = SymSpell(count_threshold = 2)
     update!(d, joinpath(@__DIR__, "..", "assets", "test_dict.txt"))
 
-    @test d.words["key"] == 10
+    @test d.words[first(d.deletes["key"])] == ("key", 10)
     @test d.below_threshold_words["sad"] == 1
     @test length(d.words) == 3
 end
