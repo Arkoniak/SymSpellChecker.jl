@@ -155,7 +155,11 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
 
         if candidate in keys(dict.deletes)
             for suggestion_id in dict.deletes[candidate]
-                suggestion, suggestion_cnt = dict.words[suggestion_id]
+                suggestion_id in considered_suggestions && continue
+                tmp = dict.words[suggestion_id]
+                suggestion = tmp[1]
+                suggestion_cnt = tmp[2]
+                # suggestion, suggestion_cnt = dict.words[suggestion_id]
                 suggestion_len = length(suggestion)
 
                 # phrase and suggestion lengths
@@ -222,26 +226,21 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                 # evaluates to false
                 if dict.prefix_length - max_edit_distance == candidate_len
                     min_distance = min(phrase_len, suggestion_len) - dict.prefix_length
-                else
-                    min_distance = 0
+
+                    min_distance > 1 && phrase[nextind(phrase, 0, phrase_len + 2 - min_distance):end] !=
+                        suggestion[nextind(suggestion, 0, suggestion_len + 2 - min_distance):end] && continue
+                    if min_distance > 0
+                        p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
+                        s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
+                        if phrase[p1] != suggestion[s1]
+                            p2 = prevind(phrase, p1)
+                            s2 = prevind(suggestion, s1)
+                            (phrase[p2] != suggestion[s1] || phrase[p1] != suggestion[s2]) && continue
+                        end
+                    end
                 end
 
-                if dict.prefix_length - max_edit_distance == candidate_len &&
-                    ((min_distance > 1 &&
-                        phrase[nextind(phrase, 0, phrase_len + 2 - min_distance):end] !=
-                            suggestion[nextind(suggestion, 0, suggestion_len + 2 - min_distance):end]) ||
-                    (min_distance > 0 &&
-                        phrase[nextind(phrase, 0, phrase_len - min_distance + 1)] !=
-                            suggestion[nextind(suggestion, 0, suggestion_len - min_distance + 1)] &&
-                        (phrase[nextind(phrase, 0, phrase_len - min_distance)] !=
-                            suggestion[nextind(suggestion, 0, suggestion_len - min_distance + 1)] ||
-                            phrase[nextind(phrase, 0, phrase_len - min_distance + 1)] !=
-                                suggestion[nextind(suggestion, 0, suggestion_len - min_distance)])
-                        ))
-                    continue
-                end
-
-                suggestion_id in considered_suggestions && continue
+                # suggestion_id in considered_suggestions && continue
 
                 # delete_in_suggestion_prefix is somewhat
                 # expensive, and only pays off when
