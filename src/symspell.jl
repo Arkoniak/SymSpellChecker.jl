@@ -1,7 +1,7 @@
-mutable struct SymSpell{S <: AbstractString, T <: Integer}
-    words::Dict{S, T}
+mutable struct SymSpell{S <: AbstractString, T <: Integer, K <: Unsigned}
+    words::Vector{Tuple{S, T}}
     below_threshold_words::Dict{S, T}
-    deletes::Dict{S, Vector{S}}
+    deletes::Dict{S, Vector{K}}
 
     max_dictionary_edit_distance::Int
     prefix_length::Int
@@ -10,7 +10,7 @@ mutable struct SymSpell{S <: AbstractString, T <: Integer}
 end
 
 SymSpell(; max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1) =
-    SymSpell{String, Int}(Dict(), Dict(), Dict(),
+    SymSpell{String, Int, UInt32}(Vector(), Dict(), Dict(),
         max_dictionary_edit_distance, prefix_length, count_threshold, 0)
 
 function SymSpell(path; sep = " ", max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1)
@@ -72,7 +72,7 @@ function edits_prefix(key::S, max_dictionary_edit_distance, prefix_length) where
     edits!(hash_set, key, 0, max_dictionary_edit_distance)
 end
 
-function Base.:push!(dict::SymSpell{S, T}, key, cnt) where {T <: Integer, S <: AbstractString}
+function Base.:push!(dict::SymSpell{S, T, K}, key, cnt) where {S, T, K}
     if cnt < 0
         if dict.count_threshold > 0 return false end
         cnt = 0
@@ -94,11 +94,11 @@ function Base.:push!(dict::SymSpell{S, T}, key, cnt) where {T <: Integer, S <: A
             dict.below_threshold_words[key] = cnt
             return false
         end
-    elseif key in keys(dict.words)
+    elseif key in keys(dict.deletes) && first(dict.words[first(dict.deletes[key])]) == key
         # just update count if it's an already added above
         # threshold word
-        cnt_prev = dict.words[key]
-        dict.words[key] = typemax(T) - cnt_prev > cnt ? cnt_prev + cnt : typemax(T)
+        cnt_prev = last(dict.words[first(dict.deletes[key])])
+        dict.words[first(dict.deletes[key])] = (key, typemax(T) - cnt_prev > cnt ? cnt_prev + cnt : typemax(T))
         return false
     elseif cnt < dict.count_threshold
         # new below threshold word
@@ -107,7 +107,8 @@ function Base.:push!(dict::SymSpell{S, T}, key, cnt) where {T <: Integer, S <: A
     end
 
     # what we have at this point is a new, above threshold word
-    dict.words[key] = cnt
+    push!(dict.words, (key, cnt))
+    idx = length(dict.words)
 
     # edits/suggestions are created only once, no matter how often
     # word occurs. edits/suggestions are created as soon as the
@@ -120,7 +121,15 @@ function Base.:push!(dict::SymSpell{S, T}, key, cnt) where {T <: Integer, S <: A
     # create deletes
     edits = edits_prefix(key, dict.max_dictionary_edit_distance, dict.prefix_length)
     for delete in edits
-        push!(get!(dict.deletes, delete, S[]), key)
+        if delete == key
+            if key in keys(dict.deletes)
+                pushfirst!(dict.deletes[key], idx)
+            else
+                dict.deletes[key] = [idx]
+            end
+        else
+            push!(get!(dict.deletes, delete, []), idx)
+        end
     end
 
     return true
