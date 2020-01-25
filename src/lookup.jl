@@ -209,6 +209,7 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                     distance > max_edit_distance_2 && continue
                 end
 
+                suggestion_id in considered_suggestions && continue
                 # number of edits in prefix == maxediddistance AND
                 # no identical suffix, then
                 # editdistance>max_edit_distance and no need for
@@ -219,13 +220,11 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                 # handles the shortcircuit of min_distance
                 # assignment when first boolean expression
                 # evaluates to false
-                suggestion_id in considered_suggestions && continue
-
                 if dict.prefix_length - max_edit_distance == candidate_len
                     min_distance = min(phrase_len, suggestion_len) - dict.prefix_length
 
-                    @inbounds min_distance > 1 && phrase[nextind(phrase, 0, phrase_len + 2 - min_distance):end] !=
-                        suggestion[nextind(suggestion, 0, suggestion_len + 2 - min_distance):end] && continue
+                    min_distance > 1 &&
+                        equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance) && continue
                     if min_distance > 0
                         p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
                         s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
@@ -236,8 +235,6 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                         end
                     end
                 end
-
-                # suggestion_id in considered_suggestions && continue
 
                 # delete_in_suggestion_prefix is somewhat
                 # expensive, and only pays off when
@@ -303,6 +300,19 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
     early_exit()
 
     return suggestions
+end
+
+@inline function equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance)
+    id1 = nextind(phrase, 0, phrase_len + 2 - min_distance)
+    id2 = nextind(suggestion, 0, suggestion_len + 2 - min_distance)
+    sz = ncodeunits(phrase)
+    @inbounds for i in 1:(sz - id1 + 1)
+        codeunit(phrase, id1) != codeunit(suggestion, id2) && return true
+        id1 += 1
+        id2 += 1
+    end
+
+    return false
 end
 
 function add_edits!(considered_deletes, candidates, candidate, candidate_len)

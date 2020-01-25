@@ -5,7 +5,7 @@ include("preamble.jl")
     d = SymSpell()
 
     @test push!(d, "a", 2)
-    @test d.words == [("a", 2)]
+    @test d.words == [("a", 2, 0x01)]
     @test isempty(d.below_threshold_words)
     @test d.deletes == Dict{String, Vector{UInt32}}("" => [1], "a" => [1])
 
@@ -33,7 +33,7 @@ include("preamble.jl")
     d = SymSpell(max_dictionary_edit_distance = 1)
     push!(d, "world", 10)
     push!(d, "word", 5)
-    @test d.words[first(d.deletes["word"])] == ("word", 5)
+    @test d.words[first(d.deletes["word"])] == ("word", 5, 0x04)
 end
 
 @testset "utf-8 dictionary" begin
@@ -46,7 +46,7 @@ end
     d = SymSpell(count_threshold = 2)
     update!(d, joinpath(@__DIR__, "..", "assets", "test_dict.txt"))
 
-    @test d.words[first(d.deletes["key"])] == ("key", 10)
+    @test d.words[first(d.deletes["key"])] == ("key", 10, 3)
     @test d.below_threshold_words["sad"] == 1
     @test length(d.words) == 3
 end
