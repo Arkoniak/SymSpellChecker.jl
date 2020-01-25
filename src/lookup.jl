@@ -203,13 +203,10 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
 
                     distance = max(phrase_len, suggestion_len)
                     distance > max_edit_distance_2 && continue
-                elseif suggestion_len == 1
-                    # TODO: correct!!!
-                    # distance = ??? phrase[suggestion[0]] < 0 ? phrase_len : phrase_len - 1
-                    distance > max_edit_distance_2 && continue
                 end
 
                 suggestion_id in considered_suggestions && continue
+
                 # number of edits in prefix == maxediddistance AND
                 # no identical suffix, then
                 # editdistance>max_edit_distance and no need for
