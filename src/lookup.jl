@@ -137,6 +137,10 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
     phrase_prefix_len = min(phrase_len, dict.prefix_length)
     push!(candidates, phrase[1:nextind(phrase, 0, phrase_prefix_len)])
 
+    is_first = true
+
+    v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
+    v0 = similar(v2)
     while !isempty(candidates)
         candidate = popfirst!(candidates)
         candidate_len = length(candidate)
@@ -241,7 +245,12 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                     continue
                 end
                 push!(considered_suggestions, suggestion_id)
-                distance = evaluate(compare_algorithm, phrase, suggestion, max_dist = max_edit_distance_2)
+
+                # if is_first
+                #     v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
+                #     is_first = false
+                # end
+                distance = evaluate2!(phrase, suggestion, max_edit_distance_2, v0, v2)
 
                 # do not process higher distances than those
                 # already found, if verbosity<ALL (note:
