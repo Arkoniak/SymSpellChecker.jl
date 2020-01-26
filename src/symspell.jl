@@ -2,6 +2,7 @@ mutable struct SymSpell{S <: AbstractString, T <: Integer, K <: Unsigned}
     words::Vector{Tuple{S, T, UInt8}}
     below_threshold_words::Dict{S, T}
     deletes::Dict{S, Vector{K}}
+    words_idx::Dict{S, K}
 
     max_dictionary_edit_distance::Int
     prefix_length::Int
@@ -10,7 +11,7 @@ mutable struct SymSpell{S <: AbstractString, T <: Integer, K <: Unsigned}
 end
 
 SymSpell(; max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1) =
-    SymSpell{String, Int, UInt32}(Vector(), Dict(), Dict(),
+    SymSpell{String, Int, UInt32}(Vector(), Dict(), Dict(), Dict(),
         max_dictionary_edit_distance, prefix_length, count_threshold, 0)
 
 function SymSpell(path; sep = " ", max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1)
@@ -109,6 +110,7 @@ function Base.:push!(dict::SymSpell{S, T, K}, key, cnt) where {S, T, K}
     # what we have at this point is a new, above threshold word
     push!(dict.words, (key, cnt, length(key)))
     idx = length(dict.words)
+    dict.words_idx[key] = idx
 
     # edits/suggestions are created only once, no matter how often
     # word occurs. edits/suggestions are created as soon as the

@@ -49,18 +49,16 @@ ValueError
 """
 function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         transfer_casing = false, verbosity = VerbosityTOP,
-        max_edit_distance = dict.max_dictionary_edit_distance,
-        compare_algorithm = DamerauLevenshtein())
+        max_edit_distance = dict.max_dictionary_edit_distance)
 
-        lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, verbosity, max_edit_distance, compare_algorithm)
+        lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, verbosity, max_edit_distance)
 end
 
 Base.:getindex(dict, phrase) = lookup(dict, phrase)
 
 function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_token,
                 transfer_casing, verbosity,
-                max_edit_distance,
-                compare_algorithm) where {S, S2, T, K}
+                max_edit_distance) where {S, S2, T, K}
     if max_edit_distance > dict.max_dictionary_edit_distance
         throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_dictionary_edit_distance)"))
     end
@@ -87,23 +85,31 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
     end
 
     # quick look for exact match
-    suggestion_cnt = 0
-    idx = K(0)
-    if phrase in keys(dict.deletes)
-        idx = first(dict.deletes[phrase])
-        may_be_suggestion, suggestion_cnt = dict.words[idx]
-        # if may_be_suggestion != phrase, than it's false alarm
-        if may_be_suggestion == phrase
-            push!(suggestions, SuggestItem(phrase, 0, suggestion_cnt))
-            # early exit - return exact match, unless caller wants all
-            # matches
-            if verbosity != VerbosityALL
-                return suggestions
-            end
-        else
-            idx = K(0)
+    if phrase in keys(dict.words_idx)
+        push!(suggestions, SuggestItem(phrase, 0, dict.words[dict.words_idx[phrase]][2]))
+        if verbosity != VerbosityALL
+            return suggestions
         end
+        idx = dict.words_idx[phrase]
+    else
+        idx = K(0)
     end
+    # idx = K(0)
+    # if phrase in keys(dict.deletes)
+    #     idx = first(dict.deletes[phrase])
+    #     may_be_suggestion, suggestion_cnt = dict.words[idx]
+    #     # if may_be_suggestion != phrase, than it's false alarm
+    #     if may_be_suggestion == phrase
+    #         push!(suggestions, SuggestItem(phrase, 0, suggestion_cnt))
+    #         # early exit - return exact match, unless caller wants all
+    #         # matches
+    #         if verbosity != VerbosityALL
+    #             return suggestions
+    #         end
+    #     else
+    #         idx = K(0)
+    #     end
+    # end
 
     if ignore_token != nothing && occursin(ignore_token, phrase)
         suggestion_cnt = 1
@@ -139,8 +145,9 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
 
     is_first = true
 
-    v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
-    v0 = similar(v2)
+    local v2
+    local v0
+
     while !isempty(candidates)
         candidate = popfirst!(candidates)
         candidate_len = length(candidate)
@@ -163,17 +170,22 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
 
                 # phrase and suggestion lengths
                 # diff > allowed/current best distance
-                if abs(suggestion_len - phrase_len) > max_edit_distance_2 ||
-                    # suggestion must be for a different delete
-                    # string, in same bin only because of hash
-                    # collision
-                    (suggestion_len < candidate_len) ||
-                    # if suggestion len = delete len, then it
-                    # either equals delete or is in same bin
-                    # only because of hash collision
-                    (suggestion_len == candidate_len && suggestion != candidate)
-                    continue
-                end
+                # if abs(suggestion_len - phrase_len) > max_edit_distance_2 ||
+                #     # suggestion must be for a different delete
+                #     # string, in same bin only because of hash
+                #     # collision
+                #     (suggestion_len < candidate_len) ||
+                #     # if suggestion len = delete len, then it
+                #     # either equals delete or is in same bin
+                #     # only because of hash collision
+                #     (suggestion_len == candidate_len && suggestion != candidate)
+                #     continue
+                # end
+                phrase_len - suggestion_len > max_edit_distance_2 && continue
+                suggestion_len - phrase_len > max_edit_distance_2 && continue
+                suggestion_len < candidate_len && continue
+                suggestion_len == candidate_len && suggestion != candidate && continue
+
                 suggestion_prefix_len = min(suggestion_len, dict.prefix_length)
                 if (suggestion_prefix_len > phrase_prefix_len) &&
                     (suggestion_prefix_len - candidate_len > max_edit_distance_2)
@@ -227,8 +239,8 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                     min_distance > 1 &&
                         equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance) && continue
                     if min_distance > 0
-                        p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
-                        s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
+                        @inbounds p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
+                        @inbounds s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
                         @inbounds if phrase[p1] != suggestion[s1]
                             p2 = prevind(phrase, p1)
                             s2 = prevind(suggestion, s1)
@@ -246,10 +258,11 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                 end
                 push!(considered_suggestions, suggestion_id)
 
-                # if is_first
-                #     v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
-                #     is_first = false
-                # end
+                if is_first
+                    v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
+                    v0 = similar(v2)
+                    is_first = false
+                end
                 distance = evaluate2!(phrase, suggestion, max_edit_distance_2, v0, v2)
 
                 # do not process higher distances than those
@@ -308,9 +321,9 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
     return suggestions
 end
 
-@inline function equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance)
-    id1 = nextind(phrase, 0, phrase_len + 2 - min_distance)
-    id2 = nextind(suggestion, 0, suggestion_len + 2 - min_distance)
+function equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance)
+    @inbounds id1 = nextind(phrase, 0, phrase_len + 2 - min_distance)
+    @inbounds id2 = nextind(suggestion, 0, suggestion_len + 2 - min_distance)
     sz = ncodeunits(phrase)
     @inbounds for i in 1:(sz - id1 + 1)
         codeunit(phrase, id1) != codeunit(suggestion, id2) && return true
@@ -322,12 +335,17 @@ end
 end
 
 function add_edits!(considered_deletes, candidates, candidate, candidate_len)
+    sz = ncodeunits(candidate)
     idx1 = 0
     idx2 = nextind(candidate, idx1)
     idx3 = idx2
     for i in eachindex(0:candidate_len-1)
         idx3 = nextind(candidate, idx3)
-        delete = candidate[1:idx1] * candidate[idx3:end]
+        # black magic, fast string with deleted character
+        delete = Base._string_n(sz - idx3 + idx2)
+        unsafe_copyto!(pointer(delete), pointer(candidate), idx2 - 1)
+        unsafe_copyto!(pointer(delete, idx2), pointer(candidate, idx3), sz - idx3 + 1)
+        # delete = candidate[1:idx1] * candidate[idx3:end]
         idx1 = idx2
         idx2 = idx3
         if !(delete in considered_deletes)
@@ -356,11 +374,11 @@ function delete_in_suggestion_prefix(delete, suggestion, prefix_len)
     i = 1
     for _ in 1:delete_len
         while j_cnt <= suggestion_len && delete[i] != suggestion[j]
-            j = nextind(suggestion, j)
+            @inbounds j = nextind(suggestion, j)
             j_cnt += 1
         end
         j_cnt > suggestion_len && return false
-        i = nextind(delete, i)
+        @inbounds i = nextind(delete, i)
     end
 
     return true
