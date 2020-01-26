@@ -49,18 +49,16 @@ ValueError
 """
 function lookup(dict, phrase; include_unknown = false, ignore_token = nothing,
         transfer_casing = false, verbosity = VerbosityTOP,
-        max_edit_distance = dict.max_dictionary_edit_distance,
-        compare_algorithm = DamerauLevenshtein())
+        max_edit_distance = dict.max_dictionary_edit_distance)
 
-        lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, verbosity, max_edit_distance, compare_algorithm)
+        lookup(dict, phrase, include_unknown, ignore_token, transfer_casing, verbosity, max_edit_distance)
 end
 
 Base.:getindex(dict, phrase) = lookup(dict, phrase)
 
-function lookup(dict, phrase::S, include_unknown, ignore_token,
+function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_token,
                 transfer_casing, verbosity,
-                max_edit_distance,
-                compare_algorithm) where S
+                max_edit_distance) where {S, S2, T, K}
     if max_edit_distance > dict.max_dictionary_edit_distance
         throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_dictionary_edit_distance)"))
     end
@@ -87,17 +85,31 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
     end
 
     # quick look for exact match
-    suggestion_cnt = 0
-    if phrase in keys(dict.words)
-        suggestion_cnt = dict.words[phrase]
-        push!(suggestions, SuggestItem(phrase, 0, suggestion_cnt))
-
-        # early exit - return exact match, unless caller wants all
-        # matches
+    if phrase in keys(dict.words_idx)
+        push!(suggestions, SuggestItem(phrase, 0, dict.words[dict.words_idx[phrase]][2]))
         if verbosity != VerbosityALL
             return suggestions
         end
+        idx = dict.words_idx[phrase]
+    else
+        idx = K(0)
     end
+    # idx = K(0)
+    # if phrase in keys(dict.deletes)
+    #     idx = first(dict.deletes[phrase])
+    #     may_be_suggestion, suggestion_cnt = dict.words[idx]
+    #     # if may_be_suggestion != phrase, than it's false alarm
+    #     if may_be_suggestion == phrase
+    #         push!(suggestions, SuggestItem(phrase, 0, suggestion_cnt))
+    #         # early exit - return exact match, unless caller wants all
+    #         # matches
+    #         if verbosity != VerbosityALL
+    #             return suggestions
+    #         end
+    #     else
+    #         idx = K(0)
+    #     end
+    # end
 
     if ignore_token != nothing && occursin(ignore_token, phrase)
         suggestion_cnt = 1
@@ -116,11 +128,13 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
     end
 
     considered_deletes = Set{S}()
-    considered_suggestions = Set{S}()
+    considered_suggestions = Set{K}()
 
     # we considered the phrase already in the
     # 'phrase in keys(dict.words)' above
-    push!(considered_suggestions, phrase)
+    if idx > 0
+        push!(considered_suggestions, idx)
+    end
 
     max_edit_distance_2 = max_edit_distance
     candidates = S[]
@@ -128,6 +142,11 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
     # add original prefix
     phrase_prefix_len = min(phrase_len, dict.prefix_length)
     push!(candidates, phrase[1:nextind(phrase, 0, phrase_prefix_len)])
+
+    is_first = true
+
+    local v2
+    local v0
 
     while !isempty(candidates)
         candidate = popfirst!(candidates)
@@ -146,22 +165,27 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
         end
 
         if candidate in keys(dict.deletes)
-            for suggestion in dict.deletes[candidate]
-                suggestion_len = length(suggestion)
+            for suggestion_id in dict.deletes[candidate]
+                @inbounds suggestion, suggestion_cnt, suggestion_len = dict.words[suggestion_id]
 
                 # phrase and suggestion lengths
                 # diff > allowed/current best distance
-                if abs(suggestion_len - phrase_len) > max_edit_distance_2 ||
-                    # suggestion must be for a different delete
-                    # string, in same bin only because of hash
-                    # collision
-                    (suggestion_len < candidate_len) ||
-                    # if suggestion len = delete len, then it
-                    # either equals delete or is in same bin
-                    # only because of hash collision
-                    (suggestion_len == candidate_len && suggestion != candidate)
-                    continue
-                end
+                # if abs(suggestion_len - phrase_len) > max_edit_distance_2 ||
+                #     # suggestion must be for a different delete
+                #     # string, in same bin only because of hash
+                #     # collision
+                #     (suggestion_len < candidate_len) ||
+                #     # if suggestion len = delete len, then it
+                #     # either equals delete or is in same bin
+                #     # only because of hash collision
+                #     (suggestion_len == candidate_len && suggestion != candidate)
+                #     continue
+                # end
+                phrase_len - suggestion_len > max_edit_distance_2 && continue
+                suggestion_len - phrase_len > max_edit_distance_2 && continue
+                suggestion_len < candidate_len && continue
+                suggestion_len == candidate_len && suggestion != candidate && continue
+
                 suggestion_prefix_len = min(suggestion_len, dict.prefix_length)
                 if (suggestion_prefix_len > phrase_prefix_len) &&
                     (suggestion_prefix_len - candidate_len > max_edit_distance_2)
@@ -195,11 +219,9 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
 
                     distance = max(phrase_len, suggestion_len)
                     distance > max_edit_distance_2 && continue
-                elseif suggestion_len == 1
-                    # TODO: correct!!!
-                    # distance = ??? phrase[suggestion[0]] < 0 ? phrase_len : phrase_len - 1
-                    distance > max_edit_distance_2 && continue
                 end
+
+                suggestion_id in considered_suggestions && continue
 
                 # number of edits in prefix == maxediddistance AND
                 # no identical suffix, then
@@ -213,26 +235,19 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                 # evaluates to false
                 if dict.prefix_length - max_edit_distance == candidate_len
                     min_distance = min(phrase_len, suggestion_len) - dict.prefix_length
-                else
-                    min_distance = 0
-                end
 
-                if dict.prefix_length - max_edit_distance == candidate_len &&
-                    ((min_distance > 1 &&
-                        phrase[nextind(phrase, 0, phrase_len + 2 - min_distance):end] !=
-                            suggestion[nextind(suggestion, 0, suggestion_len + 2 - min_distance):end]) ||
-                    (min_distance > 0 &&
-                        phrase[nextind(phrase, 0, phrase_len - min_distance + 1)] !=
-                            suggestion[nextind(suggestion, 0, suggestion_len - min_distance + 1)] &&
-                        (phrase[nextind(phrase, 0, phrase_len - min_distance)] !=
-                            suggestion[nextind(suggestion, 0, suggestion_len - min_distance + 1)] ||
-                            phrase[nextind(phrase, 0, phrase_len - min_distance + 1)] !=
-                                suggestion[nextind(suggestion, 0, suggestion_len - min_distance)])
-                        ))
-                    continue
+                    min_distance > 1 &&
+                        equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance) && continue
+                    if min_distance > 0
+                        @inbounds p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
+                        @inbounds s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
+                        @inbounds if phrase[p1] != suggestion[s1]
+                            p2 = prevind(phrase, p1)
+                            s2 = prevind(suggestion, s1)
+                            @inbounds (phrase[p2] != suggestion[s1] || phrase[p1] != suggestion[s2]) && continue
+                        end
+                    end
                 end
-
-                suggestion in considered_suggestions && continue
 
                 # delete_in_suggestion_prefix is somewhat
                 # expensive, and only pays off when
@@ -241,15 +256,21 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
                     !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length)
                     continue
                 end
-                push!(considered_suggestions, suggestion)
-                distance = evaluate(compare_algorithm, phrase, suggestion, max_dist = max_edit_distance_2)
+                push!(considered_suggestions, suggestion_id)
+
+                if is_first
+                    v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
+                    v0 = similar(v2)
+                    is_first = false
+                end
+                distance = evaluate2!(phrase, suggestion, max_edit_distance_2, v0, v2)
 
                 # do not process higher distances than those
                 # already found, if verbosity<ALL (note:
                 # max_edit_distance_2 will always equal
                 # max_edit_distance when Verbosity.ALL)
                 if distance <= max_edit_distance_2
-                    si = SuggestItem(suggestion, distance, dict.words[suggestion])
+                    si = SuggestItem(suggestion, distance, suggestion_cnt)
                     if !isempty(suggestions)
                         if verbosity == VerbosityCLOSEST
                             # we will calculate DamLev distance
@@ -300,13 +321,31 @@ function lookup(dict, phrase::S, include_unknown, ignore_token,
     return suggestions
 end
 
+function equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance)
+    @inbounds id1 = nextind(phrase, 0, phrase_len + 2 - min_distance)
+    @inbounds id2 = nextind(suggestion, 0, suggestion_len + 2 - min_distance)
+    sz = ncodeunits(phrase)
+    @inbounds for i in 1:(sz - id1 + 1)
+        codeunit(phrase, id1) != codeunit(suggestion, id2) && return true
+        id1 += 1
+        id2 += 1
+    end
+
+    return false
+end
+
 function add_edits!(considered_deletes, candidates, candidate, candidate_len)
+    sz = ncodeunits(candidate)
     idx1 = 0
     idx2 = nextind(candidate, idx1)
     idx3 = idx2
     for i in eachindex(0:candidate_len-1)
         idx3 = nextind(candidate, idx3)
-        delete = candidate[1:idx1] * candidate[idx3:end]
+        # black magic, fast string with deleted character
+        delete = Base._string_n(sz - idx3 + idx2)
+        unsafe_copyto!(pointer(delete), pointer(candidate), idx2 - 1)
+        unsafe_copyto!(pointer(delete, idx2), pointer(candidate, idx3), sz - idx3 + 1)
+        # delete = candidate[1:idx1] * candidate[idx3:end]
         idx1 = idx2
         idx2 = idx3
         if !(delete in considered_deletes)
@@ -335,11 +374,11 @@ function delete_in_suggestion_prefix(delete, suggestion, prefix_len)
     i = 1
     for _ in 1:delete_len
         while j_cnt <= suggestion_len && delete[i] != suggestion[j]
-            j = nextind(suggestion, j)
+            @inbounds j = nextind(suggestion, j)
             j_cnt += 1
         end
         j_cnt > suggestion_len && return false
-        i = nextind(delete, i)
+        @inbounds i = nextind(delete, i)
     end
 
     return true
