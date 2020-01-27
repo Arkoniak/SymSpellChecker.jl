@@ -32,6 +32,7 @@ df = sort(df, :med_val, rev = true)
 @show head(df)
 
 word = "preard" # Why is it so slow???
+word = "coretedu"
 
 ASSETS_PATH = joinpath(@__DIR__, "..", "..", "assets")
 # ASSETS_PATH = "/home/skoffer/.julia/dev/SymSpellChecker/assets/"
@@ -50,7 +51,12 @@ const d = SymSpell(dicts[1], max_dictionary_edit_distance = max_edit, prefix_len
 
 lookup(d, word, verbosity = SymSpellChecker.VerbosityCLOSEST)
 
-@btime lookup($d, $word, verbosity = SymSpellChecker.VerbosityCLOSEST)
+# 189.313 μs (85 allocations: 12.27 KiB)
+# 135.744 μs (85 allocations: 12.27 KiB)
+# 111.050 μs (86 allocations: 12.38 KiB)
+@btime lookup($d, $word, verbosity = $SymSpellChecker.VerbosityCLOSEST)
+@time (for _ in 1:1000; lookup(d, word, verbosity = SymSpellChecker.VerbosityCLOSEST); end)
+@time (for _ in 1:1000; lookup(d, word, verbosity = SymSpellChecker.VerbosityCLOSEST); end)
 
 @profview (for _ in 1:1000; lookup(d, word, verbosity = SymSpellChecker.VerbosityCLOSEST); end)
 
@@ -256,7 +262,7 @@ function f3(d, med_res)
     cnt = [0, 0, 0]
     res = true
     for (suggestion, candidate, suggestion_len, candidate_len) in med_res
-        SymSpellChecker.medium_filter(cnt, suggestion, candidate, phrase,
+        res = res ⊻ SymSpellChecker.medium_filter(suggestion, candidate, phrase,
             phrase_len, suggestion_len, candidate_len,
             2, d.prefix_length,
             SymSpellChecker.VerbosityCLOSEST) && continue
@@ -267,9 +273,65 @@ function f3(d, med_res)
     end
 end
 
-
+f3(d, med_res)
+# Original: 72.282 μs (1 allocation: 112 bytes)
+# Without delete_in_prefix: 52.799 μs (1 allocation: 112 bytes)
+# withous delete with array of char: 9.409 μs (1 allocation: 112 bytes)
+# Original with array of char:
 @btime f3($d, $med_res)
 med_res = Tuple{String, String}[]
-med_res = map(x -> (string(x[1]), string(x[2]), length(x[1]), length(x[2])), split.(readlines(joinpath(@__DIR__, "medium_suggestions.csv")), ","))
+med_res = map(x -> (collect(string(x[1])), collect(string(x[2])), length(x[1]), length(x[2])), split.(readlines(joinpath(@__DIR__, "medium_suggestions.csv")), ","))
 
 med_res
+
+
+
+function f4(heavy_res, phrase)
+    v2 = Vector{Int}(undef, 6 + 2)
+    v0 = similar(v2)
+    # phrase = collect("preard")
+    distance = 0
+    for suggestion in heavy_res
+        distance += SymSpellChecker.evaluate3!(phrase, suggestion, 2, v0, v2)
+    end
+    distance
+end
+
+heavy_res = readlines(joinpath(@__DIR__, "heavy_suggestions.csv"))
+heavy_res = collect.(readlines(joinpath(@__DIR__, "heavy_suggestions.csv")))
+
+phrase = collect("preard")
+# 1022
+f4(heavy_res, phrase)
+
+# 33.964 μs (2 allocations: 288 bytes)
+# Vector version (22.187 μs (2 allocations: 288 bytes))
+@btime f4($heavy_res, $phrase)
+
+lookup(d, word, verbosity = SymSpellChecker.VerbosityCLOSEST)
+
+# 189.313 μs (85 allocations: 12.27 KiB)
+@btime lookup($d, $word, verbosity = $SymSpellChecker.VerbosityCLOSEST)
+
+x = [1, 2, 3, 4, 5, 6, 7]
+y = [4, 2, 6, 5, 6, 7]
+
+y[4:end]
+x[5:end]
+
+@btime @views $x[5:end] == $y[4:end]
+@btime $x[5:end] == $y[4:end]
+
+function equal_suffixes(x, x_len, y, y_len, delta)
+    id1 = x_len - delta + 1
+    id2 = y_len - delta + 1
+    for i in 0:(x_len - id1)
+        @inbounds x[id1 + i] != y[id2 + i] && return true
+    end
+
+    return false
+end
+
+equal_suffixes(x, 7, y, 6, 3)
+
+@btime equal_suffixes($x, 7, $y, 6, 3)

@@ -59,6 +59,7 @@ Base.:getindex(dict, phrase) = lookup(dict, phrase)
 function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_token,
                 transfer_casing, verbosity,
                 max_edit_distance) where {S, S2, T, K}
+    # t1 = time()
     if max_edit_distance > dict.max_dictionary_edit_distance
         throw(ArgumentError("Distance $max_edit_distance larger than dictionary threshold $(dict.max_dictionary_edit_distance)"))
     end
@@ -150,6 +151,10 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
 
     cnt = [0, 0, 0]
 
+    phrase2 = collect(phrase)
+
+    # t2 = time()
+    # @show (t2 - t1) * 1000_000
     while !isempty(candidates)
         candidate = popfirst!(candidates)
         candidate_len = length(candidate)
@@ -171,22 +176,19 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                 @inbounds suggestion, suggestion_cnt, suggestion_len = dict.words[suggestion_id]
                 # @debug candidate, suggestion
 
-                !light_filter(cnt, suggestion, candidate,
-                    phrase_len, phrase_prefix_len,
+                !light_filter(phrase_len, phrase_prefix_len,
                     suggestion_len, candidate_len,
                     max_edit_distance_2, dict.prefix_length) && continue
 
-                suggestion_id in considered_suggestions && continue
 
                 # open(joinpath(@__DIR__, "..", "benchmark", "extras", "medium_suggestions.csv"), "a") do file
                 #     println(file, "$suggestion,$candidate")
                 # end
-                !medium_filter(cnt, suggestion, candidate, phrase,
+                !medium_filter(suggestion, phrase2,
                     phrase_len, suggestion_len, candidate_len,
                     max_edit_distance, dict.prefix_length,
                     verbosity) && continue
 
-                push!(considered_suggestions, suggestion_id)
                 if is_first
                     v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
                     v0 = similar(v2)
@@ -197,14 +199,18 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                 # open(joinpath(@__DIR__, "..", "benchmark", "extras", "heavy_suggestions.csv"), "a") do file
                 #     println(file, "$suggestion")
                 # end
-                distance = evaluate2!(phrase, suggestion, max_edit_distance_2, v0, v2)
+                distance = evaluate3!(phrase2, suggestion, max_edit_distance_2, v0, v2)
+                distance > max_edit_distance_2 && continue
+
+                suggestion_id in considered_suggestions && continue
+                push!(considered_suggestions, suggestion_id)
 
                 # do not process higher distances than those
                 # already found, if verbosity<ALL (note:
                 # max_edit_distance_2 will always equal
                 # max_edit_distance when Verbosity.ALL)
                 if distance <= max_edit_distance_2
-                    si = SuggestItem(suggestion, distance, suggestion_cnt)
+                    si = SuggestItem(dict.idx_words[suggestion_id], distance, suggestion_cnt)
                     if !isempty(suggestions)
                         if verbosity == VerbosityCLOSEST
                             # we will calculate DamLev distance
@@ -225,8 +231,8 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                     end
                     push!(suggestions, si)
                 end
-           end
-       end
+            end
+        end
 
         # add edits: derive edits (deletes) from candidate (phrase)
         # and add them to candidates list. this is a recursive
@@ -241,27 +247,30 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
         end
     end
 
+    # t3 = time()
+    # @show (t2 - t1) * 1000_000
+    # @show (t3 - t2) * 1000_000
+
     if length(suggestions) > 1
         sort!(suggestions)
     end
 
     if transfer_casing
         for (i, s) in enumerate(suggestions)
-            suggestions[i] = SuggestItem(transfer_casing_for_similar_text(original_phrase, s.phrase), s.distance, s.count)
+            suggestions[i] = SuggestItem(transfer_casing_for_similar_text(original_phrase, s.term), s.distance, s.count)
         end
     end
 
-    @show cnt
+    # @show cnt
 
     early_exit()
 
     return suggestions
 end
 
-function light_filter(cnt, suggestion, candidate,
-        phrase_len, phrase_prefix_len, suggestion_len, candidate_len,
-        max_edit_distance_2, prefix_length)
-    # cnt[1] += 1
+@inline function light_filter(phrase_len::Int, phrase_prefix_len::Int, suggestion_len::Int,
+     candidate_len::Int, max_edit_distance_2::Int, prefix_length::Int)
+
     # phrase and suggestion lengths
     # diff > allowed/current best distance
     # if abs(suggestion_len - phrase_len) > max_edit_distance_2 ||
@@ -317,10 +326,10 @@ function light_filter(cnt, suggestion, candidate,
     true
 end
 
-function medium_filter(cnt, suggestion, candidate, phrase,
-    phrase_len, suggestion_len, candidate_len,
-    max_edit_distance, prefix_length, verbosity)
-    # cnt[2] += 1
+@inline function medium_filter(suggestion::Vector{Char}, phrase::Vector{Char},
+    phrase_len::Int, suggestion_len::Int, candidate_len::Int,
+    max_edit_distance::Int, prefix_length::Int, verbosity)
+
     # number of edits in prefix == maxediddistance AND
     # no identical suffix, then
     # editdistance>max_edit_distance and no need for
@@ -338,27 +347,42 @@ function medium_filter(cnt, suggestion, candidate, phrase,
         min_distance > 1 &&
             equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance) && return false
         if min_distance > 0
-            @inbounds p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
-            @inbounds s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
+            p1 = phrase_len + 1 - min_distance
+            s1 = suggestion_len + 1 - min_distance
             @inbounds if phrase[p1] != suggestion[s1]
-                p2 = prevind(phrase, p1)
-                s2 = prevind(suggestion, s1)
-                @inbounds (phrase[p2] != suggestion[s1] || phrase[p1] != suggestion[s2]) && return false
+                @inbounds (phrase[p1 - 1] != suggestion[s1] || phrase[p1] != suggestion[s1 - 1]) && return false
             end
         end
     end
 
+    # if prefix_length - max_edit_distance == candidate_len
+    #     min_distance = min(phrase_len, suggestion_len) - prefix_length
+    #
+    #     min_distance > 1 &&
+    #         equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance) && return false
+    #     if min_distance > 0
+    #         @inbounds p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
+    #         @inbounds s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
+    #         @inbounds if phrase[p1] != suggestion[s1]
+    #             p2 = prevind(phrase, p1)
+    #             s2 = prevind(suggestion, s1)
+    #             @inbounds (phrase[p2] != suggestion[s1] || phrase[p1] != suggestion[s2]) && return false
+    #         end
+    #     end
+    # end
+
+    # TODO: It should be removed, right?
     # delete_in_suggestion_prefix is somewhat
     # expensive, and only pays off when
     # verbosity is TOP or CLOSEST
-    if verbosity != VerbosityALL &&
-        !delete_in_suggestion_prefix(candidate, suggestion, prefix_length)
-        return false
-    end
+    # if verbosity != VerbosityALL &&
+    #     !delete_in_suggestion_prefix2(candidate, suggestion, prefix_length)
+    #     return false
+    # end
     true
 end
 
-function equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance)
+function equal_suffixes2(phrase, phrase_len, suggestion, suggestion_len, min_distance)
     @inbounds id1 = nextind(phrase, 0, phrase_len + 2 - min_distance)
     @inbounds id2 = nextind(suggestion, 0, suggestion_len + 2 - min_distance)
     sz = ncodeunits(phrase)
@@ -371,7 +395,18 @@ function equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_dist
     return false
 end
 
-function add_edits!(considered_deletes, candidates, candidate, candidate_len)
+function equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance)
+    id1 = phrase_len + 2 - min_distance
+    id2 = suggestion_len + 2 - min_distance
+    sz = phrase_len
+    for i in 0:(phrase_len - id1)
+        @inbounds phrase[id1 + i] != suggestion[id2 + i] && return true
+    end
+
+    return false
+end
+
+@inline function add_edits!(considered_deletes, candidates, candidate, candidate_len)
     sz = ncodeunits(candidate)
     idx1 = 0
     idx2 = nextind(candidate, idx1)
@@ -415,6 +450,27 @@ function delete_in_suggestion_prefix(delete, suggestion, prefix_len)
             j_cnt += 1
         end
         j_cnt > suggestion_len && return false
+        @inbounds i = nextind(delete, i)
+    end
+
+    return true
+end
+
+function delete_in_suggestion_prefix2(delete, suggestion, prefix_len)
+    isempty(delete) && return true
+    suggestion_len = min(prefix_len, length(suggestion))
+
+    # TODO: verify that by construction delete_len always <= prefix_len and this line can be removed
+    delete_len = min(prefix_len, length(delete))
+
+    j = 1
+    i = 1
+    for _ in 1:delete_len
+        c = delete[i]
+        while j <= suggestion_len && c != suggestion[j]
+            j += 1
+        end
+        j > suggestion_len && return false
         @inbounds i = nextind(delete, i)
     end
 

@@ -1,8 +1,9 @@
 mutable struct SymSpell{S <: AbstractString, T <: Integer, K <: Unsigned}
-    words::Vector{Tuple{S, T, Int}}
+    words::Vector{Tuple{Vector{Char}, T, Int}}
     below_threshold_words::Dict{S, T}
     deletes::Dict{S, Vector{K}}
     words_idx::Dict{S, K}
+    idx_words::Dict{K, S}
 
     max_dictionary_edit_distance::Int
     prefix_length::Int
@@ -11,7 +12,7 @@ mutable struct SymSpell{S <: AbstractString, T <: Integer, K <: Unsigned}
 end
 
 SymSpell(; max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1) =
-    SymSpell{String, Int, UInt32}(Vector(), Dict(), Dict(), Dict(),
+    SymSpell{String, Int, UInt32}(Vector(), Dict(), Dict(), Dict(), Dict(),
         max_dictionary_edit_distance, prefix_length, count_threshold, 0)
 
 function SymSpell(path; sep = " ", max_dictionary_edit_distance = 2, prefix_length = 7, count_threshold = 1)
@@ -95,11 +96,11 @@ function Base.:push!(dict::SymSpell{S, T, K}, key, cnt) where {S, T, K}
             dict.below_threshold_words[key] = cnt
             return false
         end
-    elseif key in keys(dict.deletes) && first(dict.words[first(dict.deletes[key])]) == key
+    elseif key in keys(dict.deletes) && join(first(dict.words[first(dict.deletes[key])])) == key
         # just update count if it's an already added above
         # threshold word
         cnt_prev = last(dict.words[first(dict.deletes[key])])
-        dict.words[first(dict.deletes[key])] = (key, typemax(T) - cnt_prev > cnt ? cnt_prev + cnt : typemax(T), length(key))
+        dict.words[first(dict.deletes[key])] = (collect(key), typemax(T) - cnt_prev > cnt ? cnt_prev + cnt : typemax(T), length(key))
         return false
     elseif cnt < dict.count_threshold
         # new below threshold word
@@ -108,9 +109,10 @@ function Base.:push!(dict::SymSpell{S, T, K}, key, cnt) where {S, T, K}
     end
 
     # what we have at this point is a new, above threshold word
-    push!(dict.words, (key, cnt, length(key)))
+    push!(dict.words, (collect(key), cnt, length(key)))
     idx = length(dict.words)
     dict.words_idx[key] = idx
+    dict.idx_words[idx] = key
 
     # edits/suggestions are created only once, no matter how often
     # word occurs. edits/suggestions are created as soon as the
