@@ -148,6 +148,8 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
     local v2
     local v0
 
+    cnt = [0, 0, 0]
+
     while !isempty(candidates)
         candidate = popfirst!(candidates)
         candidate_len = length(candidate)
@@ -167,102 +169,34 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
         if candidate in keys(dict.deletes)
             for suggestion_id in dict.deletes[candidate]
                 @inbounds suggestion, suggestion_cnt, suggestion_len = dict.words[suggestion_id]
+                # @debug candidate, suggestion
 
-                # phrase and suggestion lengths
-                # diff > allowed/current best distance
-                # if abs(suggestion_len - phrase_len) > max_edit_distance_2 ||
-                #     # suggestion must be for a different delete
-                #     # string, in same bin only because of hash
-                #     # collision
-                #     (suggestion_len < candidate_len) ||
-                #     # if suggestion len = delete len, then it
-                #     # either equals delete or is in same bin
-                #     # only because of hash collision
-                #     (suggestion_len == candidate_len && suggestion != candidate)
-                #     continue
-                # end
-                phrase_len - suggestion_len > max_edit_distance_2 && continue
-                suggestion_len - phrase_len > max_edit_distance_2 && continue
-                suggestion_len < candidate_len && continue
-                suggestion_len == candidate_len && suggestion != candidate && continue
-
-                suggestion_prefix_len = min(suggestion_len, dict.prefix_length)
-                if (suggestion_prefix_len > phrase_prefix_len) &&
-                    (suggestion_prefix_len - candidate_len > max_edit_distance_2)
-                    continue
-                end
-
-                # True Damerau-Levenshtein Edit Distance: adjust
-                # distance, if both distances>0
-                # We allow simultaneous edits (deletes) of
-                # max_edit_distance on on both the dictionary and
-                # the phrase term. For replaces and adjacent
-                # transposes the resulting edit distance stays
-                # <= max_edit_distance. For inserts and deletes the
-                # resulting edit distance might exceed
-                # max_edit_distance. To prevent suggestions of a
-                # higher edit distance, we need to calculate the
-                # resulting edit distance, if there are
-                # simultaneous edits on both sides.
-                # Example: (bank==bnak and bank==bink, but
-                # bank!=kanb and bank!=xban and bank!=baxn for
-                # max_edit_distance=1). Two deletes on each side of
-                # a pair makes them all equal, but the first two
-                # pairs have edit distance=1, the others edit
-                # distance=2.
-                distance = 0
-                min_distance = 0
-                if candidate_len == 0
-                    # suggestions which have no common chars with
-                    # phrase (phrase_len<=max_edit_distance &&
-                    # suggestion_len<=max_edit_distance)
-
-                    distance = max(phrase_len, suggestion_len)
-                    distance > max_edit_distance_2 && continue
-                end
+                !light_filter(cnt, suggestion, candidate,
+                    phrase_len, phrase_prefix_len,
+                    suggestion_len, candidate_len,
+                    max_edit_distance_2, dict.prefix_length) && continue
 
                 suggestion_id in considered_suggestions && continue
 
-                # number of edits in prefix == maxediddistance AND
-                # no identical suffix, then
-                # editdistance>max_edit_distance and no need for
-                # Levenshtein calculation
-                # (phraseLen >= prefixLength) &&
-                # (suggestionLen >= prefixLength)
+                # open(joinpath(@__DIR__, "..", "benchmark", "extras", "medium_suggestions.csv"), "a") do file
+                #     println(file, "$suggestion,$candidate")
+                # end
+                !medium_filter(cnt, suggestion, candidate, phrase,
+                    phrase_len, suggestion_len, candidate_len,
+                    max_edit_distance, dict.prefix_length,
+                    verbosity) && continue
 
-                # handles the shortcircuit of min_distance
-                # assignment when first boolean expression
-                # evaluates to false
-                if dict.prefix_length - max_edit_distance == candidate_len
-                    min_distance = min(phrase_len, suggestion_len) - dict.prefix_length
-
-                    min_distance > 1 &&
-                        equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance) && continue
-                    if min_distance > 0
-                        @inbounds p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
-                        @inbounds s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
-                        @inbounds if phrase[p1] != suggestion[s1]
-                            p2 = prevind(phrase, p1)
-                            s2 = prevind(suggestion, s1)
-                            @inbounds (phrase[p2] != suggestion[s1] || phrase[p1] != suggestion[s2]) && continue
-                        end
-                    end
-                end
-
-                # delete_in_suggestion_prefix is somewhat
-                # expensive, and only pays off when
-                # verbosity is TOP or CLOSEST
-                if verbosity != VerbosityALL &&
-                    !delete_in_suggestion_prefix(candidate, suggestion, dict.prefix_length)
-                    continue
-                end
                 push!(considered_suggestions, suggestion_id)
-
                 if is_first
                     v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
                     v0 = similar(v2)
                     is_first = false
                 end
+                # cnt[3] += 1
+                # @debug "evaluate2: ", phrase, suggestion
+                # open(joinpath(@__DIR__, "..", "benchmark", "extras", "heavy_suggestions.csv"), "a") do file
+                #     println(file, "$suggestion")
+                # end
                 distance = evaluate2!(phrase, suggestion, max_edit_distance_2, v0, v2)
 
                 # do not process higher distances than those
@@ -312,13 +246,116 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
     end
 
     if transfer_casing
-        suggestions = [SuggestItem(transfer_casing_for_similar_text(original_phrase, s.phrase), s.distance, s.count)
-                        for s in suggestions]
+        for (i, s) in enumerate(suggestions)
+            suggestions[i] = SuggestItem(transfer_casing_for_similar_text(original_phrase, s.phrase), s.distance, s.count)
+        end
     end
+
+    @show cnt
 
     early_exit()
 
     return suggestions
+end
+
+function light_filter(cnt, suggestion, candidate,
+        phrase_len, phrase_prefix_len, suggestion_len, candidate_len,
+        max_edit_distance_2, prefix_length)
+    # cnt[1] += 1
+    # phrase and suggestion lengths
+    # diff > allowed/current best distance
+    # if abs(suggestion_len - phrase_len) > max_edit_distance_2 ||
+    #     # suggestion must be for a different delete
+    #     # string, in same bin only because of hash
+    #     # collision
+    #     (suggestion_len < candidate_len) ||
+    #     # if suggestion len = delete len, then it
+    #     # either equals delete or is in same bin
+    #     # only because of hash collision
+    #     (suggestion_len == candidate_len && suggestion != candidate)
+    #     continue
+    # end
+    phrase_len - suggestion_len > max_edit_distance_2 && return false
+    suggestion_len - phrase_len > max_edit_distance_2 && return false
+    suggestion_len < candidate_len && return false
+    # suggestion_len == candidate_len && suggestion != candidate && return false
+
+    suggestion_prefix_len = suggestion_len > prefix_length ? prefix_length : suggestion_len
+
+    ((suggestion_prefix_len > phrase_prefix_len) &
+        (suggestion_prefix_len - candidate_len > max_edit_distance_2)) &&
+        return false
+
+    # True Damerau-Levenshtein Edit Distance: adjust
+    # distance, if both distances>0
+    # We allow simultaneous edits (deletes) of
+    # max_edit_distance on on both the dictionary and
+    # the phrase term. For replaces and adjacent
+    # transposes the resulting edit distance stays
+    # <= max_edit_distance. For inserts and deletes the
+    # resulting edit distance might exceed
+    # max_edit_distance. To prevent suggestions of a
+    # higher edit distance, we need to calculate the
+    # resulting edit distance, if there are
+    # simultaneous edits on both sides.
+    # Example: (bank==bnak and bank==bink, but
+    # bank!=kanb and bank!=xban and bank!=baxn for
+    # max_edit_distance=1). Two deletes on each side of
+    # a pair makes them all equal, but the first two
+    # pairs have edit distance=1, the others edit
+    # distance=2.
+    #
+    if candidate_len == 0
+        # suggestions which have no common chars with
+        # phrase (phrase_len<=max_edit_distance &&
+        # suggestion_len<=max_edit_distance)
+
+        distance = max(phrase_len, suggestion_len)
+        distance > max_edit_distance_2 && return false
+    end
+
+    true
+end
+
+function medium_filter(cnt, suggestion, candidate, phrase,
+    phrase_len, suggestion_len, candidate_len,
+    max_edit_distance, prefix_length, verbosity)
+    # cnt[2] += 1
+    # number of edits in prefix == maxediddistance AND
+    # no identical suffix, then
+    # editdistance>max_edit_distance and no need for
+    # Levenshtein calculation
+    # (phraseLen >= prefixLength) &&
+    # (suggestionLen >= prefixLength)
+
+    # handles the shortcircuit of min_distance
+    # assignment when first boolean expression
+    # evaluates to false
+
+    if prefix_length - max_edit_distance == candidate_len
+        min_distance = min(phrase_len, suggestion_len) - prefix_length
+
+        min_distance > 1 &&
+            equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance) && return false
+        if min_distance > 0
+            @inbounds p1 = nextind(phrase, 0, phrase_len + 1 - min_distance)
+            @inbounds s1 = nextind(suggestion, 0, suggestion_len + 1 - min_distance)
+            @inbounds if phrase[p1] != suggestion[s1]
+                p2 = prevind(phrase, p1)
+                s2 = prevind(suggestion, s1)
+                @inbounds (phrase[p2] != suggestion[s1] || phrase[p1] != suggestion[s2]) && return false
+            end
+        end
+    end
+
+    # delete_in_suggestion_prefix is somewhat
+    # expensive, and only pays off when
+    # verbosity is TOP or CLOSEST
+    if verbosity != VerbosityALL &&
+        !delete_in_suggestion_prefix(candidate, suggestion, prefix_length)
+        return false
+    end
+    true
 end
 
 function equal_suffixes(phrase, phrase_len, suggestion, suggestion_len, min_distance)

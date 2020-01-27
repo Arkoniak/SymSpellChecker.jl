@@ -1,5 +1,5 @@
 mutable struct SymSpell{S <: AbstractString, T <: Integer, K <: Unsigned}
-    words::Vector{Tuple{S, T, UInt8}}
+    words::Vector{Tuple{S, T, Int}}
     below_threshold_words::Dict{S, T}
     deletes::Dict{S, Vector{K}}
     words_idx::Dict{S, K}
