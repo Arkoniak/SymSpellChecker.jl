@@ -189,6 +189,14 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                     max_edit_distance, dict.prefix_length,
                     verbosity) && continue
 
+
+                # DL and considered_suggestions compete with each othere
+                # In ALL mode it's usually better to test for already
+                # verified suggestions
+                if verbosity == VerbosityALL
+                    suggestion_id in considered_suggestions && continue
+                    push!(considered_suggestions, suggestion_id)
+                end
                 if is_first
                     v2 = Vector{Int}(undef, phrase_len + max_edit_distance)
                     v0 = similar(v2)
@@ -202,8 +210,10 @@ function lookup(dict::SymSpell{S2, T, K}, phrase::S, include_unknown, ignore_tok
                 distance = evaluate3!(phrase2, suggestion, max_edit_distance_2, v0, v2)
                 distance > max_edit_distance_2 && continue
 
-                suggestion_id in considered_suggestions && continue
-                push!(considered_suggestions, suggestion_id)
+                if verbosity != VerbosityALL
+                    suggestion_id in considered_suggestions && continue
+                    push!(considered_suggestions, suggestion_id)
+                end
 
                 # do not process higher distances than those
                 # already found, if verbosity<ALL (note:
