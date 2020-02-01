@@ -11,7 +11,7 @@
 #
 
 
-function common_prefix(s1::Vector{Char}, s2::Vector{Char})
+function common_prefix(s1::String32, s2::String32)
     l = 1
     ls1 = length(s1)
     ls2 = length(s2)
@@ -22,7 +22,7 @@ function common_prefix(s1::Vector{Char}, s2::Vector{Char})
     return l - 1
 end
 
-function evaluate3!(t1::Vector{Char}, t2::Vector{Char}, max_dist::Int, v0::Vector{Int}, v2::Vector{Int})
+function evaluate!(t1::String32, t2::String32, max_dist::Int, v0::Vector{Int}, v2::Vector{Int})
     if length(t1) > length(t2)
         t1, t2 = t2, t1
     end
