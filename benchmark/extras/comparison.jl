@@ -35,22 +35,22 @@ for max_edit in 1:3
             d = SymSpell(dict_path, max_dictionary_edit_distance = max_edit, prefix_length = prefix_length)
             for verbosity in [VerbosityTOP, VerbosityCLOSEST, VerbosityALL]
                 verb_name = verbosity == VerbosityTOP ? "top" : verbosity == VerbosityCLOSEST ? "closest" : "all"
-                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: exact")
                 b = @benchmark lookup($d, $"different", verbosity = $verbosity)
+                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: exact\tmin: $(minimum(b.times/1000_000))\tmed: $(median(b.times/1000_000))\tavg: $(mean(b.times/1000_000))")
                 res = length(lookup(d, "different", verbosity = verbosity))
 
                 push!(df, (max_edit, prefix_length, dict_name, verb_name, "exact", res,
                     minimum(b.times/1000_000), median(b.times/1000_000), mean(b.times/1000_000)))
 
-                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: non-exact")
                 b = @benchmark lookup($d, $"hockie", verbosity = $verbosity)
+                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: non-exact\tmin: $(minimum(b.times/1000_000))\tmed: $(median(b.times/1000_000))\tavg: $(mean(b.times/1000_000))")
                 res = length(lookup(d, "hockie", verbosity = verbosity))
 
                 push!(df, (max_edit, prefix_length, dict_name, verb_name, "non-exact", res,
                     minimum(b.times/1000_000), median(b.times/1000_000), mean(b.times/1000_000)))
 
-                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: mix")
                 b = @benchmark mix($d, $query1k, $verbosity)
+                println("max_edit: $max_edit\tprefix_length: $prefix_length\tdict: $dict_name\tverbosity: $verbosity\ttype: mix\tmin: $(minimum(b.times/1000_000_000))\tmed: $(median(b.times/1000_000_000))\tavg: $(mean(b.times/1000_000_000))")
                 res = mix(d, query1k, verbosity)
 
                 push!(df, (max_edit, prefix_length, dict_name, verb_name, "mix", res,

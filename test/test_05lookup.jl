@@ -2,7 +2,7 @@ module TestLookup
 
 include("preamble.jl")
 
-using SymSpellChecker: SuggestItem, delete_in_suggestion_prefix, Verbosity,
+using SymSpellChecker: SuggestItem, Verbosity,
     VerbosityALL, VerbosityTOP, VerbosityCLOSEST
 
 @testset "basic lookup" begin
@@ -19,7 +19,22 @@ using SymSpellChecker: SuggestItem, delete_in_suggestion_prefix, Verbosity,
     @test lookup(d, "qwe", max_edit_distance = 0, include_unknown = true) == [SuggestItem("qwe", 1, 0)]
     @test lookup(d, "abc", max_edit_distance = 1) == [SuggestItem("bc", 1, 2)]
 
-    @test d["abc"][1].term == "bc"
+    @test term(d["abc"][1]) == "bc"
+end
+
+@testset "basic options" begin
+    d = SymSpell()
+
+    push!(d, "a", 5)
+    push!(d, "bc", 2)
+
+    set_options!(d, include_unknown = true)
+    @test term(d["qwerty"][1]) == "qwerty"
+
+    set_options!(d, include_unknown = false, transfer_casing = true, max_edit_distance = 2)
+    @test term(d["Bde"][1]) == "Bc"
+
+    @test length(lookup(d, "ac", verbosity = "all")) == 2
 end
 
 @testset "words with shared prefix should retain counts" begin

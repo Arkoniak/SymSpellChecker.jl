@@ -2,7 +2,7 @@ module TestBigLookup
 
 include("preamble.jl")
 
-using SymSpellChecker: SuggestItem, delete_in_suggestion_prefix, Verbosity,
+using SymSpellChecker: SuggestItem, Verbosity,
     VerbosityALL, VerbosityTOP, VerbosityCLOSEST
 
 ASSETS_PATH = joinpath(@__DIR__, "..", "assets")
