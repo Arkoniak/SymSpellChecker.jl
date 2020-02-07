@@ -16,6 +16,7 @@ end
 String32(s::String32) = s
 
 Base.:length(s::String32) = s.l
+==(s1::String32, s2::String32) = (s1.s == s2.s) & (s1.l == s2.l)
 
 function Base.:iterate(s::String32, state::Integer = 1)
     state > length(s.s) && return nothing
