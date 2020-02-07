@@ -71,7 +71,7 @@ function lookup(dict, phrase::S; include_unknown = dict.lookup.include_unknown,
             transfer_casing, verbosity, max_edit_distance)
 end
 
-Base.:getindex(dict, phrase) = lookup(dict, phrase)
+Base.:getindex(dict, phrase) = term.(lookup(dict, phrase))
 
 # True Damerau-Levenshtein Edit Distance: adjust distance, if both distances>0
 # We allow simultaneous edits (deletes) of max_edit_distance on on both the dictionary and

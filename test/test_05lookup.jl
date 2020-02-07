@@ -19,7 +19,7 @@ using SymSpellChecker: SuggestItem, Verbosity,
     @test lookup(d, "qwe", max_edit_distance = 0, include_unknown = true) == [SuggestItem("qwe", 1, 0)]
     @test lookup(d, "abc", max_edit_distance = 1) == [SuggestItem("bc", 1, 2)]
 
-    @test term(d["abc"][1]) == "bc"
+    @test first(d["abc"]) == "bc"
 end
 
 @testset "basic options" begin
@@ -29,10 +29,10 @@ end
     push!(d, "bc", 2)
 
     set_options!(d, include_unknown = true)
-    @test term(d["qwerty"][1]) == "qwerty"
+    @test first(d["qwerty"]) == "qwerty"
 
     set_options!(d, include_unknown = false, transfer_casing = true, max_edit_distance = 2)
-    @test term(d["Bde"][1]) == "Bc"
+    @test first(d["Bde"]) == "Bc"
 
     @test length(lookup(d, "ac", verbosity = "all")) == 2
 end

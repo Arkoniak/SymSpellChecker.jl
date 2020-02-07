@@ -131,7 +131,7 @@ function edits_prefix(key::S, max_dictionary_edit_distance, prefix_length) where
     edits!(hash_set, key, 0, max_dictionary_edit_distance)
 end
 
-function Base.:push!(dict::SymSpell{T, K}, key, cnt) where {T, K}
+function Base.:push!(dict::SymSpell{T, K}, key, cnt = 1) where {T, K}
     if cnt < 0
         if dict.count_threshold > 0 return false end
         cnt = 0
