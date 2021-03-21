@@ -1,8 +1,8 @@
-# SymSpell.jl
+# SymSpellChecker.jl
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [SymSpell]
+Modules = [SymSpellChecker]
 ```
