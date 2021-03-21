@@ -1,4 +1,4 @@
-using Documenter, SymSpell
+using Documenter, SymSpellChecker
 
 makedocs(;
     modules=[SymSpellChecker],
