@@ -1,9 +1,8 @@
-# SymSpellChecker
+# SymSpellChecker.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://Arkoniak.github.io/SymSpell.jl/stable)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://Arkoniak.github.io/SymSpell.jl/dev)
-[![Build Status](https://travis-ci.com/Arkoniak/SymSpell.jl.svg?branch=master)](https://travis-ci.com/Arkoniak/SymSpell.jl)
-[![Coveralls](https://coveralls.io/repos/github/Arkoniak/SymSpell.jl/badge.svg?branch=master)](https://coveralls.io/github/Arkoniak/SymSpell.jl?branch=master)
+|                                                                                                        **Documentation**                                                                                                        |                                                                                                                                      **Build Status**                                                                                                                                      |
+|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://Arkoniak.github.io/SymSpellChecker.jl/stable)[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://Arkoniak.github.io/SymSpellChecker.jl/dev) | [![Build](https://github.com/Arkoniak/SymSpellChecker.jl/workflows/CI/badge.svg)](https://github.com/Arkoniak/SymSpellChecker.jl/actions)[![Coverage](https://codecov.io/gh/Arkoniak/SymSpellChecker.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/Arkoniak/SymSpellChecker.jl) |
 
 Julia port of [SymSpell](https://github.com/wolfgarbe/SymSpell), extremely fast spelling correction and fuzzy search algorithm.
 
